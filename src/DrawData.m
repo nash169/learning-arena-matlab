@@ -1,5 +1,4 @@
 function [varargout] = DrawData(data, targets, options)
-close all;
 
 if nargin == 3 && isfield(options,'limits') 
     limits = options.limits;

@@ -1,4 +1,4 @@
-function [Data, targets] = ProcessDemos(demos, dim, demo_struct, options)
+function [Data, targets, index] = ProcessDemos(demos, dim, demo_struct, options)
 %
 % This function preprocess raw data and put them in a format suitable for
 % SEDS. The function computes the first time derivative of demonstrations,
@@ -143,7 +143,7 @@ end
 Data=[];
 % x0 = [];
 xT = [];
-% index = 1;
+index = 1;
 curr_label = 1;
 
 for i=1:length(demos)
@@ -206,7 +206,7 @@ for i=1:length(demos)
     % x0 = [x0 [tmp(pos_index,1); curr_label]];
     
     % saving demos next to each other
-    % index = [index size(Data,2)+1];
+    index = [index size(Data,2)+1];
 end
 
 targets = zeros(xT(3,end), 2);

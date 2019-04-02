@@ -1,36 +1,88 @@
-% Now I want to separate the process of building the affinity in two steps:
-% 1. Building the graph
-% 2. Calculate the Gram matrix using the heat kernel
-% This process can be achieved in one step building the Gram matrix using
-% directly the compact support heat kernel proposed by Belkin.
-% As far as I understand if we want to achieve the same distribution it's
-% necessary to use the eps-neighborhoods approach instead of the k-nearest
-% one. This will also generate automatically a symmetric matrix that is not
-% case if the k-nearest approach is used. In addition every edge is
-% weighted instead of having value equal to 1 or 0 depending on the
-% presence of an edge. It is unclear if the must be removed  diagonal (node
-% not self connected) and MOREOVER if it is necessary to normalize the
-% "distance" matrix before applying the heat kernel on it. It seems tha in
-% this case the result is not much sensitive to changings of the heat
-% kernel hyperparameter.
+draw = false;
 
-%% Load demos
-clear; close all; clc;
-load PaperTest2.mat;
+if draw
+    DrawDemos;
+else
+    clear; close all; clc;
+    load CurrentTest.mat;
+end
+
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
-% demo = ReducedData(demo, 10); %25
 
-%% Process data
-proc_options = struct('center_data', false,...
-                      'tol_cutting', 1,...
-                      'dt', 0.1...
-                      );
-[X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
+%% Pre-porcessing options
+process_options.tol_cutting = 1.;
+process_options.dt = 0.1;
 
-% clear; close all; clc;
-% load 'Sine.mat';
-% [X, targets] = extract_demo(demos);
+%% Draw
+draw_options.plot_pos = true;
+draw_options.plot_vel = false;
+[X, targets] = ProcessDemos(demo, 2, demo_struct, process_options);
+[fig_pos] = DrawData(X, targets, draw_options);
+
+%% Separate Dynamics
+counter = 1;
+dynamics = struct(strcat('ds',num2str(counter)),demo(1));
+dynamics.ds1 = {dynamics.ds1, demo{2}};
+prev_dyn = 0;
+
+for i = 3:length(demo)
+    if counter ~= demo{i}(end,1)
+        prev_dyn = i-1;
+    end
+    counter = demo{i}(end,1);
+    dynamics.(strcat('ds',num2str(counter))){i-prev_dyn} = demo{i};    
+end
+
+%% SEDS options
+K = 6;                        % Number of Gaussian funcitons
+options.tol_mat_bias = 10^-6; % Small positive scalar to avoid instabilities in Gaussian kernel
+options.display = 1;          % Displays the output of each iterations
+options.tol_stopping=10^-10;  % Stoppping tolerance
+options.max_iter = 500;       % Maximum number of iteration for the solver [default: i_max=1000]
+options.objective = 'mse';    % use mean square error as criterion to optimize parameters of GMM
+
+process_options.center_data = true;
+
+%% Simulation options
+opt_sim.dt = 0.1;
+opt_sim.i_max = 3000;
+opt_sim.tol = 0.1;
+
+fields = fieldnames(dynamics);
+
+demos_sim = cell(length(demo),1);
+
+cell_index = 1;
+curr_label = 1;
+
+for i=1:length(fields)
+    curr_demo = dynamics.(fields{i});
+    for j = 1 : length(curr_demo)
+        curr_demo{j}(3,:) = 1;
+    end
+    [X, targets, index] = ProcessDemos(curr_demo, 2, demo_struct, process_options);
+    % [X, targets] = ProcessDemos(demo, 2, demo_struct, process_options);
+% [fig_pos] = DrawData(X, targets, draw_options);
+
+    Data = X(1:end-1,:);
+    [Priors_0, Mu_0, Sigma_0] = initialize_SEDS(Data,K);
+    [Priors, Mu, Sigma]=SEDS_Solver(Priors_0,Mu_0,Sigma_0,Data,options);
+    
+    d = size(Data,1)/2;
+    x0_all = Data(1:d,index(1:end-1)); %finding initial points of all demonstrations
+    fn_handle = @(x) ml_gmr_mod(Priors,Mu,Sigma,x,1:d,d+1:2*d);
+    [x, xd]=Simulation(x0_all,[],fn_handle,opt_sim); %running the simulator
+    for j = 1 : size(x,3)
+       demos_sim{cell_index} = [x(:,:,j)+targets'; ones(1,size(x(:,:,j),2))*curr_label];
+       cell_index = cell_index + 1;
+    end
+    curr_label = curr_label + 1;
+end
+
+%%
+process_options.center_data = false;
+[X, targets] = ProcessDemos(demos_sim, 2, demo_struct, process_options);
 
 x_i = X(1:2,:)';
 v_i = X(3:4,:)';
@@ -39,11 +91,10 @@ v_norm(isnan(v_norm)) = 0;
 l_i = X(5,:)';
 [m,~] = size(x_i);
 
-%% Draw data
 draw_options = struct('plot_pos', true, ...  % Draw the demonstrated positions
                       'plot_vel', false ...  % Draw the demonstrated velocities
                       );
-fig_pos = DrawData([x_i'; v_i'./vecnorm(v_i,2,2)'; l_i'], targets, draw_options);
+fig_pos2 = DrawData([x_i'; v_i'./vecnorm(v_i,2,2)'; l_i'], targets, draw_options);
 
 %% Build Graph
 % Sigma estimation based on sample frequency
@@ -117,18 +168,6 @@ alpha = 1;
 % Affinity matrix - Apply Graph to Gram matrix
 S = K.*W;
 
-% Remove diagonal
-% S = S.*~eye(size(S));
-
-% Normalize the "distance" matrix
-% Z = (W.*Z);
-% Z = max(Z, Z');
-% max_dist = max(max(Z));
-% S = nthroot(S,max_dist);
-
-% Symmetrize the matrix
-% S = max(S, S');
-
 % Degree matrix
 D = diag(sum(S,2));
 
@@ -143,14 +182,6 @@ M_alpha = D_alpha\S_alpha;
 
 % Infinitesimal generator of the Markov Chain
 L_alpha = (eye(size(M_alpha)) - M_alpha)/t;
-
-% Laplacian "classic" matrix
-L = eye(size(S))-D\S;
-% L(isnan(L)) = 0; D(isnan(D)) = 0;
-% L(isinf(L)) = 0; D(isinf(D)) = 0;
-
-% Markov chain "classic" matrix
-M = D\S;
 
 %% Solve Eigensystem
 num_eigen = 15;
@@ -191,7 +222,7 @@ PlotEigenfun(eigenData, plot_options);
 %% Scatter
 labels = X(end,:);
 colors = hsv(length(unique(labels)));
-alpha_s = eigvect_r(:,3:end);
+alpha_s = eigvect_r(:,4:end);
 
 np = 8;
 h=gcf;
@@ -202,11 +233,6 @@ for i = 1:np
       grid on;
    end
 end
-
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print(h, '-dpdf', 'scatterplot.pdf');
 
 %% Build Lyapunov Function
 
@@ -226,32 +252,8 @@ kpar_lyap = struct('sigma', 5.5, ...
                   'lyap_type', 'transpose', ...
                   'sigma_attract', .03 ...
                   );
-%%
-[V, dV] = RebuildLyap(x, 2, dynamics(2,:), kpar_lyap);
-
-% k_rbf = Kernels2('gauss', kpar_rbf);
-% [k_lyap, dk_lyap] = Kernels2('gauss_anisotr_lyap', kpar_lyap);
-
-% dV = 0;
-% for i = 1: size(dynamics{1,1},1)
-%     dV = dV + (1+10*k_rbf(dynamics{1,4}(i,:),dynamics{1,6})) ...
-%               *dk_lyap(dynamics{1,1}(i,:),x,dynamics{1,2}(i,:));
-% end
-
-% f = 0; df = 0;
-% for i = 1:size(dynamics{1,1},1)
-%    f = f +  k(dynamics{1,1}(i,:),x,dynamics{1,4}(i,:),[-0.00338840682393591,-0.00176517914315017]);
-%    f = f + (1+param.lambda*rbf2(dynamics{1,4}(i,:),dynamics{1,6}))*rbf(dynamics{1,1}(i,:),x)*abs(dynamics{1,5}(i));
-%    f = f + (1+10*rbf2(dynamics{1,4}(i,:),dynamics{1,6}))*k4(dynamics{1,1}(i,:),x,test(i,:))*norm(test(i,:));
-%    f = f + (1+10*k_rbf(dynamics{1,4}(i,:),dynamics{1,6}))*k_lyap(dynamics{1,1}(i,:),x,dynamics{1,2}(i,:));
-%    df = df + (1+10*k_rbf(dynamics{1,4}(i,:),dynamics{1,6}))*dk_lyap(dynamics{1,1}(i,:),x,dynamics{1,2}(i,:));
-% end
-% 
-% for i = 1:size(dynamics{2,1},1)
-%    f = f +  k(dynamics{1,1}(i,:),x,dynamics{1,4}(i,:),[-0.00338840682393591,-0.00176517914315017]);
-%    f = f + (1+param.lambda*rbf2(dynamics{2,4}(i,:),dynamics{2,6}))*rbf(dynamics{2,1}(i,:),x);
-%    f = f + k4(dynamics{2,1}(i,:),x,dynamics{2,2}(i,:));
-% end
+              
+[V, dV] = RebuildLyap(x, 2, dynamics(1,:), kpar_lyap);
 
 figure
 hold on;
@@ -266,10 +268,3 @@ figure
 surf(Xs,Ys,reshape(V,100,100))
 colormap hot
 axis square
-
-[AttractErr,LyapErr,LyapErr_quad] = MetricEval(xs, ys, 0.9, dynamics(2,:), kpar_lyap);
-
-%% Single plot
-fig_map = figure;
-scatter(eigvect_r(:,4),eigvect_r(:,5),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
-grid on;
