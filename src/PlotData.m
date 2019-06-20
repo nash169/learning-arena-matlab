@@ -48,7 +48,7 @@ if exist('options','var')
    if isfield(options,'class_names'),   class_names = options.class_names;  end
    if isfield(options,'weights'),       weights     = options.weights;      end
    if isfield(options,'colors'),        colors      = options.colors;       end
-   if isfield(options,'cmap'),          cmap        = options.cmap;       end
+   if isfield(options,'cmap'),          cmap        = options.cmap;         end
    if isfield(options,'plot_figure'),   plot_figure = options.plot_figure;  end
    if isfield(options,'plot_labels'),   plot_labels = options.plot_labels;  end
 end

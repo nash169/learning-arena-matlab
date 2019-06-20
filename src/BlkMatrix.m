@@ -31,8 +31,11 @@ end
 
 m = size(V,1);
 
-[X, Y] = meshgrid(1:d,1:m);
-X = X + repelem((0:d:m-d+1)',d,1);
+[~, Y] = meshgrid(1:d,1:m);
+% X = X + repelem((0:d:m-d+1)',d,1);
+
+
+X = reshape(permute(reshape(Y',d,d,[]),[2,1,3]),d,m)';
 
 M = sparse(reshape(Y,[],1), reshape(X,[],1), reshape(V,[],1), m, m);
 end

@@ -1,12 +1,13 @@
-function [Data, targets, index] = ProcessDemos(demos, dim, demo_struct, options)
+function [Data, x0, xT, targets, index] = ProcessDemos(demos, demo_struct, dim, options)
 %
-% This function preprocess raw data and put them in a format suitable for
-% SEDS. The function computes the first time derivative of demonstrations,
-% shift the final point of all demonstrations to the origin (this only
-% simplify computation load in SEDS), and trim datas. The function can be
-% called using: 
+% This function preprocess raw data creating the dataset suitable for
+% manifold learning. If requested, it computes the velocities given the
+% positions and the time intervall. In addition it is possible to trim data
+% having velocities module below a certain threshold. The function gives
+% back the training dataset and the position of the targets.
 %
-%          [x0 , xT, Data, index] = preprocess_demos(demos,time,tol_cutting)
+% [Data, x0, xT, targets, index] = ProcessDemos(demos, demo_struct, dim,
+% options)
 %
 % Inputs -----------------------------------------------------------------
 %
@@ -24,28 +25,21 @@ function [Data, targets, index] = ProcessDemos(demos, dim, demo_struct, options)
 %   o demo_struct: 
 %       Array of strings containing the demo's structure legend.
 %
-%   o options.tol_cutting:  
-%       A small positive scalar that is used to trim data. It
-%       removes the redundant datapoint from the begining and
-%       the end of each demonstration that their first time
-%       derivative is less than 'tol_cutting'. Though this is
-%       not necessary for SEDS; however from practical point of
-%       view, it is very useful. There are always lots of noisy
-%       data at the begining (before the user starts the
-%       demosntration) and the end (after the user finished the
-%       demonstration) of each demosntration that are not
-%       useful.
+%   o options:
+%       - tol_cutting: A small positive scalar that is used to trim data.
+%       It removes the redundant datapoint from the begining and the end of
+%       each demonstration that their first time derivative is less than
+%       'tol_cutting';
+%       
+%       - center_data: If set to 'true' the function will center the data
+%       to the target;
 %
-%   o options.time:    
-%       This variable can be provided in two ways. If time steps
-%       between all demonstrations are the same, 'time' could be
-%       given as a positive scalar (i.e. time = dt). If not, 'time'
-%       should follow the following format:
-%       - time{n}: 1 x T^n vector representing the time array of length
-%                  T^n corresponding to the first demo  (1 < n < N)
+%       - calc_vel: If set to 'true' and time is provided it calculates the
+%       velocities given the positions;
+%       
+%       - smooth_window
 %
-%   o options.center_data:
-%       If set to 'true' the function will center the data to the target.
+%       - reduce_factor
 %
 %
 % Outputs ----------------------------------------------------------------
@@ -70,28 +64,8 @@ function [Data, targets, index] = ProcessDemos(demos, dim, demo_struct, options)
 %              T1:T2-1 -> 2nd demonstration, and T2:T3-1 -> 3rd
 %              demonstration.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%    Copyright (c) 2010 S. Mohammad Khansari-Zadeh, LASA Lab, EPFL,   %%%
-%%%          CH-1015 Lausanne, Switzerland, http://lasa.epfl.ch         %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% The program is free for non-commercial academic use. Please contact the
-% author if you are interested in using the software for commercial purposes.
-% The software must not be modified or distributed without prior permission
-% of the authors. Please acknowledge the authors in any academic publications
-% that have made use of this code or part of it. Please use this BibTex
-% reference:
-% 
-% S. M. Khansari-Zadeh and A. Billard, "Learning Stable Non-Linear Dynamical 
-% Systems with Gaussian Mixture Models", IEEE Transaction on Robotics, 2011.
-%
-% To get latest upadate of the software please visit
-%                          http://lasa.epfl.ch/khansari
-%
-% Please send your feedbacks or questions to:
-%                           mohammad.khansari_at_epfl.ch
 
-%%
+%% Read Demo struct
 time_index = 0;
 pos_index = 0;
 vel_index = 0;
@@ -120,18 +94,28 @@ if ~pos_index
     error('At least the position is necessary')
 end
 
-if nargin > 3 && isfield(options,'dt')
-    dt = options.dt;
+%% Check the options
+if nargin > 3 && isfield(options,'calc_vel')
+    calc_vel = options.calc_vel;
+else
+    calc_vel = false;
 end
 
 if nargin > 3 && isfield(options,'tol_cutting')
-    if ~time_index && ~isfield(options,'dt')
-        error('Time missing')
+    if ~vel_index
+        if ~time_index
+            error('Velocity & Time are missing')
+        else
+            calc_vel = true;            
+        end
+    else
+        calc_vel = false;
     end
+    
     tol_cutting = options.tol_cutting;
-    calc_vel = true;
+    trim = true;
 else
-    calc_vel = false;
+    trim = false;
 end
 
 if nargin > 3 && isfield(options,'center_data')
@@ -140,8 +124,23 @@ else
     center_data = false;
 end
 
+if nargin > 3 && isfield(options,'smooth_window')
+    smooth_window = options.smooth_window;
+    smooth_data = true;
+else
+    smooth_data = false;
+end
+
+if nargin > 3 && isfield(options,'reduce_factor')
+    reduce_factor = options.reduce_factor;
+    reduce_data = true;
+else
+    reduce_data = false;
+end
+
+%% Preprocess Data
 Data=[];
-% x0 = [];
+x0 = [];
 xT = [];
 index = 1;
 curr_label = 1;
@@ -150,28 +149,41 @@ for i=1:length(demos)
     clear tmp tmp_d
     demo_data=[];
     tmp = demos{i};
+    
     if label_index
         curr_label = tmp(label_index,1);
     end
     
     % de-noising data (not necessary)
-    for j=pos_index
-        tmp(j,:) = smooth(tmp(j,:),25); 
+    if smooth_data
+        for j=pos_index
+            tmp(j,:) = smooth(tmp(j,:),smooth_window); 
+        end
+    end
+    
+    % Reduce data (remove this part)
+    if reduce_data
+        tmp = tmp(:,1:reduce_factor:end);
     end
     
     % computing the first time derivative
-    if calc_vel 
-        if dt
-            pos_d = diff(tmp(pos_index,:),1,2)/dt;
-        else
-            pos_d = diff(tmp(pos_index,:),1,2)./repmat(diff(t),dim,1);
+    if calc_vel
+        pos_d = (tmp(pos_index,2:end) - tmp(pos_index,1:end-1))./(tmp(time_index,2:end) - tmp(time_index,1:end-1));
+        if trim
+            trim_index = vecnorm(pos_d,2,1) <= tol_cutting;
+            tmp(:,trim_index) = [];
+            pos_d(:,trim_index) = [];
         end
-        
-        % trimming demonstrations
-        ind = find(sqrt(sum(pos_d.*pos_d,1))>tol_cutting);
-        tmp = tmp(:,min(ind):max(ind)+1);
-        pos_d = [pos_d(:,min(ind):max(ind)) zeros(dim,1)];
+        pos_d = [pos_d zeros(dim,1)];
+    elseif vel_index
+        if trim
+            trim_index = vecnorm(tmp(vel_index,:),2,1) <= tol_cutting;
+            tmp(:,trim_index) = [];
+        end
     end
+    
+    % Saving the initial point of each demo
+    x0 = [x0 [demos{i}(pos_index,1); curr_label]];
     
     % Saving the final point (target) of each demo
     xT = [xT [demos{i}(pos_index,end); curr_label]];
@@ -192,27 +204,23 @@ for i=1:length(demos)
          demo_data = [demo_data; tmp(vel_index,:)];
     end
     
-    % Store Labels
-    if label_index
-        demo_data = [demo_data; tmp(label_index,:)];
-    else
-        demo_data = [demo_data; curr_label*ones(1, size(demo_data,2))];
+    % Store Time
+    if time_index
+        demo_data = [demo_data; tmp(time_index,:)];
     end
+    
+    % Store Labels
+    demo_data = [demo_data; curr_label*ones(1, size(demo_data,2))];
     
     % Saving Data
     Data = [Data demo_data];
     
-    % saving the initial point of each demo
-    % x0 = [x0 [tmp(pos_index,1); curr_label]];
-    
-    % saving demos next to each other
+    % Saving demos next to each other
     index = [index size(Data,2)+1];
 end
 
-targets = zeros(xT(3,end), 2);
-for i = 1 : xT(3,end)
-    targets(i,:) = mean(xT(1:dim, xT(3,:)==i),2)';
-end
-% xT = mean(xT,2); %we consider the mean value of all demonstraions' final point as the target
-% x0 = mean(x0,2); %the mean value of all demonstrations' initial point
+targets = [];
+
+for i = 1:max(xT(end,:))
+    targets = [targets; sum(xT(1:end-1, xT(end,:)==i),2)'/sum(xT(end,:)==i)];
 end

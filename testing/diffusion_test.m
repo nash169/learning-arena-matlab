@@ -10,40 +10,38 @@
 % weighted instead of having value equal to 1 or 0 depending on the
 % presence of an edge. It is unclear if the must be removed  diagonal (node
 % not self connected) and MOREOVER if it is necessary to normalize the
-% "distance" matrix before applying the heat kernel on it. It seems tha in
+% "distance" matrix before applying the heat kernel on it. It seems that in
 % this case the result is not much sensitive to changings of the heat
 % kernel hyperparameter.
+clear; close all; clc;
 
 %% Load demos
-clear; close all; clc;
-load PaperTest2.mat;
-demo = DataStruct.demo;
-demo_struct = DataStruct.demo_struct;
+ds = load('ds_demo.mat');
+ds_dim = 2;
 % demo = ReducedData(demo, 10); %25
 
 %% Process data
-proc_options = struct('center_data', false,...
-                      'tol_cutting', 1,...
-                      'dt', 0.1...
-                      );
-[X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
+preprocess_options = struct('center_data', false,...
+                            'calc_vel', false, ...
+                            'tol_cutting', 0.01, ...
+                            'smooth_window', 25 ...
+                            );
+[X, ~, ~, targets, ~] = ProcessDemos(ds.demo, ds.demo_struct, ds_dim, preprocess_options);
 
-% clear; close all; clc;
-% load 'Sine.mat';
-% [X, targets] = extract_demo(demos);
+x_i = X(1:ds_dim, :)';
+v_i = X(ds_dim+1:2*ds_dim, :)';
+t_i = X(end-1,:)';
+l_i = X(end,:)';
 
-x_i = X(1:2,:)';
-v_i = X(3:4,:)';
-v_norm = v_i./vecnorm(v_i,2,2);
-v_norm(isnan(v_norm)) = 0;
-l_i = X(5,:)';
-[m,~] = size(x_i);
+% v_norm = v_i./vecnorm(v_i,2,2);
+% v_norm(isnan(v_norm)) = 0;
+% [m,~] = size(x_i);
 
 %% Draw data
 draw_options = struct('plot_pos', true, ...  % Draw the demonstrated positions
                       'plot_vel', false ...  % Draw the demonstrated velocities
                       );
-fig_pos = DrawData([x_i'; v_i'./vecnorm(v_i,2,2)'; l_i'], targets, draw_options);
+fig_pos = DrawData([x_i'; v_i'; t_i'; l_i'], targets, draw_options);
 
 %% Build Graph
 % Sigma estimation based on sample frequency
@@ -156,8 +154,8 @@ M = D\S;
 num_eigen = 15;
 % [alpha, lambda] = eigs(L,num_eigen+1,'smallestabs');
 
-[eigvect_r, lambda, eigvect_l] = eig(M_alpha);
-[eig_sort, eig_index] = sort(diag(lambda),'descend');
+[eigvect_r, lambda, eigvect_l] = eig(L_alpha);
+[eig_sort, eig_index] = sort(diag(lambda),'ascend');
 lambda = diag(eig_sort);
 eigvect_r = eigvect_r(:,eig_index);
 eigvect_l = eigvect_l(:,eig_index);

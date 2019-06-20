@@ -61,12 +61,16 @@ kpar.epsilon = 0.0003;
 kpar.lyap_type = 'transpose';
 
 % a = 0; b = 0; c = 0; d = 1; e=1; m=0; g=0; h=0;
+a = 1;
 
 % Test for the rbf kernel
 % [k_diff, dk_diff, d2k_diff] = Kernels('gauss',kpar);
 % 
 % kpar.sigma = 1; %6.5
 [k, dk, d2k] = Kernels('gauss',kpar);
+% f = a*k([50 50],x);
+% df =  a*dk([50 50],x);
+
 % f = a*k(x_test(1,:),x) + b*k(x_test(2,:),x) + c*k(x_test(3,:),x) + ...
 %     d*k(x_test(4,:),x) + e*k(x_test(5,:),x) + m*k(x_test(6,:),x) + ...
 %     g*k(x_test(7,:),x) + h*k(x_test(8,:),x);
@@ -99,8 +103,12 @@ k2 = Kernels('cosine');
 k4 = Kernels('gauss_ns',kpar);
 [k_test, dk_test, d2k_test] = Kernels2('gauss_anisotr_vel', kpar);
 [k_vel, dk_vel] = Kernels2('gauss_anisotr_vel', kpar);
-f =  k_vel(x_train(100,:),x, x_train(100,:), v_train(100,:));
+% f =  k_vel(x_train(100,:),x, x_train(100,:), v_train(100,:));
 % f = k4([30 50],x, [100 0]) + k4([40 50],x,[100 0]) + k4([70 50],x,[50 0]) + k4([75 50],x,[50 0]) + k4([80 50],x,[50 0]);
+tic;
+f = k_test([50 50],x, [10 10], 5);
+df = dk_test([50 50],x, [10 10], 5);
+toc;
 % f4 = 0;
 % for i = 1:size(x_train,1)
 %     f4 = f4 + k4(x_train(i,:),x,v_train(i,:));
@@ -143,8 +151,8 @@ kpar.degree = 2;
 [k_prova, dk_prova] = Kernels2('gauss_anisotr_lyap', kpar);
 % kpar.slope =.001;
 % filter = sigmoid(kpar);
-% p = k_prova([50 50],x,[5 0]);
-% dp = dk_prova([50 50],x,[5 0]);
+% f = k_prova([50 50],x,[5 5],1);
+% df = dk_prova([50 50],x,[5 5],1);
 
 %% Draw Kernel
 figure
@@ -153,8 +161,8 @@ axis square;
 contourf(Xs,Ys,reshape(f,100,100))
 colorbar;
 % scatter(50,50,'k.')
-scatter(x_train(:,1),x_train(:,2),'k.')
-% streamslice(Xs, Ys, reshape(df(:,1),100,100), reshape(df(:,2),100,100))
+% scatter(x_train(:,1),x_train(:,2),'k.')
+streamslice(Xs, Ys, reshape(df(:,1),100,100), reshape(df(:,2),100,100))
 
 figure
 surf(Xs,Ys,reshape(f,100,100))

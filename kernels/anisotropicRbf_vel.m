@@ -49,8 +49,15 @@ V_p = V_norm*R;
 dt = 0.1;
 k = 0.005; %.03
 
+a = 5;
+b = 10;
+
+% D = sparse(1:size(V,2)*size(V,1),1:size(V,2)*size(V,1),...
+%            reshape([ones(size(V_temp,1),1)*2*sigma^2, ones(size(V_temp,1),1)*20*sigma^2]',[],1),... % 2*(P*dt/k + sigma*exp(-vecnorm(V_max,2,2).^2/1e-5)).^2
+%            size(V,2)*size(V,1),size(V,2)*size(V,1));
+       
 D = sparse(1:size(V,2)*size(V,1),1:size(V,2)*size(V,1),...
-           reshape([ones(size(V_temp,1),1)*2*sigma^2, ones(size(V_temp,1),1)*20*sigma^2]',[],1),... % 2*(P*dt/k + sigma*exp(-vecnorm(V_max,2,2).^2/1e-5)).^2
+           reshape([a*vecnorm(V,2,2), b*vecnorm(V,2,2)]',[],1),... % 2*(P*dt/k + sigma*exp(-vecnorm(V_max,2,2).^2/1e-5)).^2
            size(V,2)*size(V,1),size(V,2)*size(V,1));
 
 U = BlkMatrix(V_norm,V_p);
@@ -65,6 +72,9 @@ T = repelem(X-Y,1,size(x,2)).*repmat(X-Y,1,size(x,2));
 end
 
 function H = CalcHess2(x,y,v,R,p,sigma)
+tic;
 S = VelElip2(repmat(v,size(y,1),1),R,repmat(p,size(y,1),1),sigma)^-1;
+toc;
 H = -2*S + 4*S*BlkMatrix(outerProd(x,y))*S;
+full(H)
 end

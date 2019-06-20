@@ -7,6 +7,14 @@ else
     load CurrentTest.mat;
 end
 
+% Check SEDS dependency
+seds_path = genpath([userpath,'/seds']);
+if isempty(seds_path)
+    error('SEDS not found in MATLAB workspace');
+else
+    addpath(seds_path);
+end
+
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
 
@@ -63,7 +71,7 @@ for i=1:length(fields)
     end
     [X, targets, index] = ProcessDemos(curr_demo, 2, demo_struct, process_options);
     % [X, targets] = ProcessDemos(demo, 2, demo_struct, process_options);
-% [fig_pos] = DrawData(X, targets, draw_options);
+    % [fig_pos] = DrawData(X, targets, draw_options);
 
     Data = X(1:end-1,:);
     [Priors_0, Mu_0, Sigma_0] = initialize_SEDS(Data,K);
@@ -222,7 +230,7 @@ PlotEigenfun(eigenData, plot_options);
 %% Scatter
 labels = X(end,:);
 colors = hsv(length(unique(labels)));
-alpha_s = eigvect_r(:,4:end);
+alpha_s = eigvect_r(:,3:end);
 
 np = 8;
 h=gcf;

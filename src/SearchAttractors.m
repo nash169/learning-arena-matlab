@@ -18,7 +18,7 @@ clust_eigs(isnan(clust_eigs)) = 0;
 eigenvects = eigenvects(:,n_attracts+1:end);
 
 % Extract the number of important eigenvalues and eigenvectors
-tol = abs(lambda(2) - lambda(1))*50;
+tol = abs(lambda(2) - lambda(1))*2;
 for i = 1 : m - n_attracts
     if abs(lambda(i+1) - lambda(i)) > tol
         n_eigs = i;

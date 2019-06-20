@@ -175,7 +175,7 @@ varargout{1} = figure;
 for i=1:alpha_dim
     
     if alpha_dim ~= 1
-        subaxis(lines_plot, 2, i,'Spacing', 0.05, 'Padding', 0, 'Margin', 0.05);
+        Subaxis(lines_plot, 2, i,'Spacing', 0.05, 'Padding', 0, 'Margin', 0.05);
 %         subplot(lines_plot,2,index);
     end
     
