@@ -16,21 +16,22 @@
 clear; close all; clc;
 
 %% Load demos
-ds = load('ds_demo.mat');
+ds = load('2as_3t.mat');
 ds_dim = 2;
 % demo = ReducedData(demo, 10); %25
 
 %% Process data
 preprocess_options = struct('center_data', false,...
-                            'calc_vel', false, ...
+                            'calc_vel', true, ...
                             'tol_cutting', 0.01, ...
                             'smooth_window', 25 ...
                             );
-[X, ~, ~, targets, ~] = ProcessDemos(ds.demo, ds.demo_struct, ds_dim, preprocess_options);
+[X, ~, ~, targets, ~] = ProcessDemos(ds.DataStruct.demo, ds.DataStruct.demo_struct, ds_dim, preprocess_options);
 
 x_i = X(1:ds_dim, :)';
 v_i = X(ds_dim+1:2*ds_dim, :)';
-t_i = X(end-1,:)';
+t_i = X(end-2,:)';
+dt_i = X(end-1,:)';
 l_i = X(end,:)';
 
 % v_norm = v_i./vecnorm(v_i,2,2);
@@ -45,11 +46,14 @@ fig_pos = DrawData([x_i'; v_i'; t_i'; l_i'], targets, draw_options);
 
 %% Build Graph
 % Sigma estimation based on sample frequency
-dt = 0.1;
-max_v = max(vecnorm(v_i,2,2));
-max_d = max_v*dt;
+v_norm = v_i./vecnorm(v_i,2,2);
+v_norm(isnan(v_norm)) = 0;
+[m,~] = size(x_i);
+
+max_d = max(vecnorm(v_i,2,2).*dt_i);
 scale = 1.5;
 sigma = scale*(max_d/3);
+
 
 % Define global kernel options
 kpar_graph = struct('sigma', sigma,...
@@ -73,7 +77,7 @@ graph_options = struct('conntype','threshold', ... % epsilon - threshold - n-nea
                        'plot_matrix', false, ...
                        'matrix_type', 'sgn_mat' ... % sgn_mat - real_mat
                        );
-W1 = GraphBuild2(graph_options, x_i, x_i);
+[W1, D1] = GraphBuild2(graph_options, x_i, x_i);
 
 % Build directionality check graph matrix
 graph_options.thr = 0.8;
@@ -85,13 +89,13 @@ W2 = GraphBuild2(graph_options, x_i, x_i, v_i);
 graph_options.thr = 0.9;
 graph_options.isnan_value = 1;
 graph_options.kernel = Kernels('cosine');
-W3 = GraphBuild2(graph_options, v_i, v_i);
+[W3, D3] = GraphBuild2(graph_options, v_i, v_i);
 
 W = W1.*W3;
 % GraphDraw(x_i, W);
 
 %% Building Gram Matrix
-t = 0.5; % Time for the heat kernel.
+t = 32; % Time for the heat kernel.
 
 kpar_mat = struct('sigma', sqrt(t/2), ...
                   'r', 30, ...
@@ -201,31 +205,31 @@ for i = 1:np
    end
 end
 
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print(h, '-dpdf', 'scatterplot.pdf');
+% set(h,'PaperOrientation','landscape');
+% set(h,'PaperUnits','normalized');
+% set(h,'PaperPosition', [0 0 1 1]);
+% print(h, '-dpdf', 'scatterplot.pdf');
 
 %% Build Lyapunov Function
 
-[dynamics] = SearchAttractors(x_i,v_i,lambda,eigvect_r,eigvect_l);
-
-x_res = 100; y_res = 100;
-xs = linspace(0, 100, x_res);
-ys = linspace(0, 100, y_res);
-[Xs, Ys] = meshgrid(xs,ys);
-x = [Xs(:),Ys(:)];
-
-kpar_rbf = struct('sigma', 0.1); %.05
-
-kpar_lyap = struct('sigma', 5.5, ...
-                  'lambda', 5, ...
-                  'rot', [0 1;-1 0], ...
-                  'lyap_type', 'transpose', ...
-                  'sigma_attract', .03 ...
-                  );
+% [dynamics] = SearchAttractors(x_i,v_i,lambda,eigvect_r,eigvect_l);
+% 
+% x_res = 100; y_res = 100;
+% xs = linspace(0, 100, x_res);
+% ys = linspace(0, 100, y_res);
+% [Xs, Ys] = meshgrid(xs,ys);
+% x = [Xs(:),Ys(:)];
+% 
+% kpar_rbf = struct('sigma', 0.1); %.05
+% 
+% kpar_lyap = struct('sigma', 5.5, ...
+%                   'lambda', 5, ...
+%                   'rot', [0 1;-1 0], ...
+%                   'lyap_type', 'transpose', ...
+%                   'sigma_attract', .03 ...
+%                   );
 %%
-[V, dV] = RebuildLyap(x, 2, dynamics(2,:), kpar_lyap);
+% [V, dV] = RebuildLyap(x, 2, dynamics(2,:), kpar_lyap);
 
 % k_rbf = Kernels2('gauss', kpar_rbf);
 % [k_lyap, dk_lyap] = Kernels2('gauss_anisotr_lyap', kpar_lyap);
@@ -251,23 +255,23 @@ kpar_lyap = struct('sigma', 5.5, ...
 %    f = f + k4(dynamics{2,1}(i,:),x,dynamics{2,2}(i,:));
 % end
 
-figure
-hold on;
-contourf(Xs,Ys,reshape(V,100,100),20)
-scatter(x_i(:,1),x_i(:,2),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
-streamslice(Xs, Ys, reshape(dV(:,1),100,100), reshape(dV(:,2),100,100));
-colormap hot
-axis square
-colorbar
-
-figure
-surf(Xs,Ys,reshape(V,100,100))
-colormap hot
-axis square
-
-[AttractErr,LyapErr,LyapErr_quad] = MetricEval(xs, ys, 0.9, dynamics(2,:), kpar_lyap);
+% figure
+% hold on;
+% contourf(Xs,Ys,reshape(V,100,100),20)
+% scatter(x_i(:,1),x_i(:,2),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
+% streamslice(Xs, Ys, reshape(dV(:,1),100,100), reshape(dV(:,2),100,100));
+% colormap hot
+% axis square
+% colorbar
+% 
+% figure
+% surf(Xs,Ys,reshape(V,100,100))
+% colormap hot
+% axis square
+% 
+% [AttractErr,LyapErr,LyapErr_quad] = MetricEval(xs, ys, 0.9, dynamics(2,:), kpar_lyap);
 
 %% Single plot
-fig_map = figure;
-scatter(eigvect_r(:,4),eigvect_r(:,5),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
-grid on;
+% fig_map = figure;
+% scatter(eigvect_r(:,4),eigvect_r(:,5),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
+% grid on;

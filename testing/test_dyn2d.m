@@ -23,7 +23,7 @@ streamslice(X,Y,reshape(x_dot_test(:,1),10,[]), reshape(x_dot_test(:,2),10,[]));
 hold on;
 
 %% Sample point
-dt = 0.01;
+dt = 0.001;
 T = 5;
 label = 1;
 num_trajs = 3;

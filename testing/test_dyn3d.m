@@ -32,7 +32,7 @@ scatter3(sqrt(x_a(1)),sqrt(x_a(2)),sqrt(x_a(3)), 100, 'r','filled', 'MarkerEdgeC
 
 %% Sample point
 dt = 0.01;
-T = 10;
+T = 20;
 label = 1;
 num_trajs = 3;
 dim = 3;
@@ -40,7 +40,7 @@ demo = cell(num_trajs,1);
 
 for i = 1:num_trajs
    x_0 = rand(1,3)*10;
-   [x_dot, x_next] = SampleDS(f, x_0, dt, T);
+   [x_dot, x_next] = SampleDS(f, x_0, sqrt(x_a), dt, T);
    demo{i,1} = [x_next'; x_dot'; 0:dt:T; label*ones(1,size(x_next,1))];
 end
 

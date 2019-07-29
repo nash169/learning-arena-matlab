@@ -13,7 +13,7 @@ if size(x_0,1) == 1
         x_dot(i,:) = f(x_next(i,:));
     end
     
-    if x_next(end,:) - x_T >= 0.01
+    if norm(x_next(end,:) - x_T) >= 0.1
         error('Target not reached');
     end
 else
@@ -28,7 +28,7 @@ else
         x_dot(:,i) = f(x_next(:,i));
     end
     
-    if x_next(:,end) - x_T >= 0.01
+    if norm(x_next(:,end) - x_T) >= 0.01
         error('Target not reached');
     end
 end

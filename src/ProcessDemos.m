@@ -108,8 +108,6 @@ if nargin > 3 && isfield(options,'tol_cutting')
         else
             calc_vel = true;            
         end
-    else
-        calc_vel = false;
     end
     
     tol_cutting = options.tol_cutting;
@@ -180,6 +178,7 @@ for i=1:length(demos)
             trim_index = vecnorm(tmp(vel_index,:),2,1) <= tol_cutting;
             tmp(:,trim_index) = [];
         end
+        tmp(vel_index,end) = 0;
     end
     
     % Saving the initial point of each demo
@@ -207,6 +206,7 @@ for i=1:length(demos)
     % Store Time
     if time_index
         demo_data = [demo_data; tmp(time_index,:)];
+        demo_data = [demo_data; tmp(time_index,2:end)-tmp(time_index,1:end-1) 0];
     end
     
     % Store Labels
