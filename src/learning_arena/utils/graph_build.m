@@ -7,12 +7,12 @@ if nargin > 1
         params.(varargin{i}) = varargin{i+1}; 
     end
 end
-if ~isfield(params, 'type'); params.type = 'esp-neighborhoods'; end
+if ~isfield(params, 'type'); params.type = 'eps-neighborhoods'; end
 
 [m, ~] = size(data);
 
 switch params.type
-    case 'esp-neighborhoods'
+    case 'eps-neighborhoods'
         if isfield(params, 'fun')
             norm_sq = params.fun(data,data);
         else

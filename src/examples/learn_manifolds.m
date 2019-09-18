@@ -18,7 +18,6 @@ axis([0 100 0 100]); grid on;
 test = rand(1000,2);
 
 %% Kernel PCA
-
 % Create object
 kp = kernel_pca;
 % Set the dataset
@@ -26,9 +25,9 @@ kp.set_data(data);
 % Get the similarity matrix
 S_kp = kp.similarity;
 % Solve the eigendecomposition
-[V_kp,W_kp,D_kp] = kp.eigensolve;
+[D_kp,V_kp,W_kp] = kp.eigensolve;
 % Get the degree matrix
-deg_kp = kp.deegre;
+deg_kp = kp.degree;
 % Get the eigenfunctions for the points in 'test'
 funs_kp = kp.eigenfun(test);
 % Get the embedding defined by the eingenvectors in 'space'
@@ -41,17 +40,22 @@ kp.plot_embedding([1,2]);
 kp.plot_similarity;
 
 %% Diffusion Maps
-
 % Create object
-dm = kernel_pca;
+dm = diffusion_maps;
 % Set the dataset
 dm.set_data(data);
 % Get the similarity matrix
 S_dm = dm.similarity;
-% Solve the eigendecomposition
-[V_dm,W_dm,D_dm] = dm.eigensolve;
+% Get the degree matrix (of the similarity)
+Deg_dm = dm.degree;
+% Get the transport matrix
+M_dm = dm.transport;
+% Get the infinitesimal matrix
+L_dm = dm.infinitesimal;
+% Solve the eigensystem for the transport
+[D_m,V_m,W_m] = dm.eigensolve;
 % Get the degree matrix
-deg_dm = dm.deegre;
+deg_dm = dm.degree;
 % Get the eigenfunctions for the points in 'test'
 funs_dm = dm.eigenfun(test);
 % Get the embedding defined by the eingenvectors in 'space'
@@ -62,26 +66,35 @@ dm.plot_eigenfun;
 dm.plot_embedding([1,2]);
 % Plot the similarity matrix
 dm.plot_similarity;
+% Solve the eigensystem for the infinitesimal
+dm.set_params('operator', 'infinitesimal');
+[D_l,V_l,W_l] = dm.eigensolve;
+% Set graph
+% dm.set_graph(G);
 
 %% Laplacian Eigenmaps
-
-% Create object
-le = kernel_pca;
-% Set the dataset
+le = laplacian_eigenmaps;
+% Set data
 le.set_data(data);
 % Get the similarity matrix
 S_le = le.similarity;
-% Solve the eigendecomposition
-[V_le,W_le,D_le] = le.eigensolve;
-% Get the degree matrix
-deg_le = le.deegre;
+% Get the degree matrix (of the similarity)
+D_le = le.degree;
+% Get the infinitesimal matrix
+L_le = le.laplacian;
+% Solve the eigensystem for the transport
+[D_lem,V_lem,W_lem] = le.eigensolve;
 % Get the eigenfunctions for the points in 'test'
 funs_le = le.eigenfun(test);
-% Get the embedding defined by the eingenvectors in 'space'
-U_le = le.embedding([1,2]);
-% Plot the eigenfunctions
-le.plot_eigenfun;
-% Plot the embedding
+% Plot the spctrum
+le.plot_spectrum(1:9);
+% Plot the graph
+le.plot_graph; 
+% PLot the embedding
 le.plot_embedding([1,2]);
+% Plot the first eigenfunction
+le.plot_eigenfun(1, 'plot_stream', true);
 % Plot the similarity matrix
 le.plot_similarity;
+% Set graph
+% le.set_graph(G);

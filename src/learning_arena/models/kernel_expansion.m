@@ -117,6 +117,7 @@ classdef kernel_expansion < handle
            
            if ~obj.is_grid_
                obj.set_grid(obj.fig_options_.res, obj.fig_options_.grid{:});
+               obj.is_grid_ = true;
            end
            
            obj.expansion;

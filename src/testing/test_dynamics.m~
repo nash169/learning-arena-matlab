@@ -1,0 +1,131 @@
+clear; close all; clc;
+
+%% Create position dataset
+step = 3;
+num_points = 9;
+x = [10 25; 
+     40 55; 
+     70 75; 
+     35 10; 
+     50 40; 
+     75 70;
+     80 10; 
+     70 35; 
+     80 70];
+
+%% Create velocities dataset
+v = [];
+for i=1:3:size(x,1)
+    v = [v; (x(i+1:i+step-1,:) - x(i:i+step-2,:)) ./ vecnorm(x(i+1:i+step-1,:) - x(i:i+step-2,:),2,2); 0 0];
+end
+
+lambdas = [3,2,1,3,2,1,3,2,1];
+v = lambdas'.*v;
+
+%% Create graph
+G = 0.5*eye(num_points);
+G(1,2) = 1; G(2,3) = 1;
+G(4,5) = 1; G(5,6) = 1;
+G(7,8) = 1; G(8,9) = 1;
+G(3,6) = 1; G(6,9) = 1; G(3,9) = 1;
+G = G+G';
+
+% Kernel
+length = 15.;
+myrbf = rbf;
+myrbf.set_params('sigma', length);
+K = myrbf.gramian(x,x);
+% myrbf.plot_gramian;
+
+%% Diffusion Maps
+dm = diffusion_maps('kernel', myrbf);
+% Set data
+dm.set_data(x);
+% Set diffusion parameter
+dm.set_params('alpha', 0, 'epsilon', length^2);
+% Set graph
+dm.set_graph(G);
+% Get the similarity matrix
+S_dm = dm.similarity;
+% Get the degree matrix (of the similarity)
+D_dm = dm.degree;
+% Get the transport matrix
+M_dm = dm.transport;
+% Get the infinitesimal matrix
+L_dm = dm.infinitesimal;
+% Solve the eigensystem for the transport
+[D_m,V_m,W_m] = dm.eigensolve;
+% Solve the eigensystem for the infinitesimal
+dm.set_params('operator', 'infinitesimal');
+[D_l,V_l,W_l] = dm.eigensolve(x);
+
+% Diffusion maps
+alpha = 0;
+epsilon = length^2;
+S = K.*G;
+Deg = diag(sum(S,2));
+S_alpha  = Deg^-alpha*S*Deg^-alpha;
+D_alpha = diag(sum(S_alpha,2));
+M_alpha = D_alpha\S_alpha;
+L_alpha = (eye(size(M_alpha)) - M_alpha)/epsilon;
+L = eye(size(S)) - Deg\S;
+
+[V,D,W] = eig(L_alpha);
+[a, b] = sort(diag(D),'ascend');
+D = diag(a);
+V = V(:,b);
+W = W(:,b);
+
+% Number visualization (to implement in manifold_learning class)
+% b = num2str([1:num_points]'); c = cellstr(b);
+% dx = 0.5; dy = 0.5;
+% figure
+% scatter(x(:,1), x(:,2), 'filled')
+% text(x(:,1)+dx, x(:,2)+dy, c)
+% axis([0 100 0 100])
+% grid on; hold on;
+% quiver(x(:,1), x(:,2), v(:,1), v(:,2))
+
+% h = figure;
+% scatter(x(:,1), x(:,2), 'filled')
+% axis([0 100 0 100])
+% grid on
+% GraphDraw(x,G,h);
+% dm.plot_graph;
+
+
+figure
+plot(1:num_points, diag(D), '-o')
+grid on
+dm.plot_spectrum(1:num_points);
+
+figure
+scatter(V(:,2), V(:,3), 'filled')
+hold on
+dm.plot_embedding([2,3]);
+
+% scatter(x_a(:,1), x_a(:,2), 'filled', 'r')
+% dx = 0.005; dy = 0.005;
+% text(V(:,2)+dx, V(:,3)+dy, c)
+% 
+%% Buil Gaussian Process
+% Build gp targets set
+x_a = ([V(3,2), V(3,3)] + [V(6,2), V(6,3)] + [V(9,2), V(9,3)])/3;
+y = vecnorm(x-x_a, 2, 2);
+
+%% Set kernel parameters and create GP
+myrbf.set_params('sigma_n', 0.2, 'sigma_f', 1);
+mygp = gaussian_process('kernel', myrbf, 'targets', y);
+mygp.set_data(x);
+mygp.set_grid(100, 0, 100, 0, 100);
+% 
+% ops_exps = struct( ...
+%     'grid', [0 100; 0 100], ...
+%     'res', 100, ...
+%     'plot_data', true, ...
+%     'plot_stream', true ...
+%     );
+% mygp.plot;
+% g = mygp.contour(ops_exps);
+% hold on
+% scatter(x(:,1), x(:,2), 'filled', 'r', 'LineWidth', 0.75)

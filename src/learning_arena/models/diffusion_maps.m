@@ -6,18 +6,20 @@ classdef diffusion_maps < manifold_learning
             %DIFFUSION_MAPS Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@manifold_learning(varargin{:});
-            if ~isfield(obj.params_, 'alpha'); obj.params_.sigma_f = 0; end
+            if ~isfield(obj.params_, 'alpha'); obj.params_.alpha = 0; end
             if  ~isfield(obj.params_, 'kernel')
                 obj.params_.kernel = rbf; 
                 obj.params_.kernel.set_params('sigma', 5.);
+                obj.params_.epsilon = obj.params_.kernel.params('sigma').^2;
             end
+            if ~isfield(obj.params_, 'operator'); obj.params_.operator = 'transport'; end
         end
         
         function M = transport(obj)
             if ~obj.is_transport_
                 S = obj.similarity;
                 D = obj.degree(S);
-                M = D^-alpha*S*D^-alpha;
+                M = D^-obj.params_.alpha*S*D^-obj.params_.alpha;
                 obj.transport_ = obj.degree(M)\M;
                 obj.is_transport_ = true;
             end
@@ -25,9 +27,9 @@ classdef diffusion_maps < manifold_learning
             if nargout > 0; M = obj.transport_; end
         end
         
-        function L = inifinitesimal(obj)
+        function L = infinitesimal(obj)
             if ~obj.is_infinitesimal_
-                obj.infinitesimal_ = (eye(obj.m_) - obj.transport)/obj.epsilon_;
+                obj.infinitesimal_ = (eye(obj.m_) - obj.transport)/obj.params_.epsilon;
                 obj.is_infinitesimal_ = true;
             end
             
@@ -37,31 +39,19 @@ classdef diffusion_maps < manifold_learning
     
     methods (Access = protected)
         function signature(obj)            
-            obj.params_name_ = {'kernel', 'alpha', 'epsilon'};
+            obj.params_name_ = {'kernel', 'alpha', 'epsilon', 'operator'};
             obj.type_ = {'graph-less'};
         end
         
-        function check(obj)
-           check@manifold_learning(obj);
-           
-           if ~obj.is_epsilon_
-               obj.epsilon_ = obj.params_.kernel.params('sigma');
-               obj.is_epsilon_ = true;
-           end
-        end
-        
         function reset(obj)
-           reset@manifold_learnig(obj);
+           reset@manifold_learning(obj);
            
            obj.is_transport_ = false;
            obj.is_infinitesimal_ = false;
-           obj.is_epsilon_ = false;
         end
         
-        function [V,D,W] = solve(obj, type)
-            if nargin < 2; type = 'transport'; end
-            
-            switch type
+        function [V,D,W] = solve(obj)            
+            switch obj.params_.operator
                 case 'transport'
                     [V,D,W] = eig(obj.transport);
                     [a, b] = sort(diag(D),'descend');
@@ -83,11 +73,9 @@ classdef diffusion_maps < manifold_learning
     properties (Access = protected)
         transport_
         infinitesimal_
-        epsilon_
         
         is_transport_
         is_infinitesimal_
-        is_epsilon_
     end
 end
 

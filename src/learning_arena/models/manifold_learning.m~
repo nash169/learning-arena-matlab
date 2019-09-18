@@ -78,6 +78,8 @@ classdef manifold_learning < handle
             if ~obj.is_similarity_
                 obj.similarity_ = obj.params_.kernel.gramian(obj.data_,obj.data_);
                 if obj.with_graph_
+                    G = obj.graph;
+                    size(G)
                     obj.similarity_ = obj.similarity_.*obj.graph;
                 end
                 obj.is_similarity_ = true;
@@ -117,6 +119,7 @@ classdef manifold_learning < handle
             if nargin > 2; obj.graph_options_ = varargin; end
             
             if ~obj.is_graph_
+                dis
                 obj.graph_ = graph_build(obj.data_, obj.graph_options_{:});
                 obj.is_graph_ = true;
                 obj.with_graph_ = true;
@@ -248,7 +251,6 @@ classdef manifold_learning < handle
             obj.is_eigen_ = false;
             obj.is_expansion_ = false;
             obj.is_similarity_ = false;
-            obj.is_graph_ = false;
         end
     end
     

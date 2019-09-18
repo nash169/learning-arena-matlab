@@ -11,7 +11,7 @@ classdef laplacian_eigenmaps < manifold_learning
                 obj.params_.kernel.set_params('sigma', 5.);
             end
             obj.with_graph_ = true;
-            obj.graph_options_ = {'type', 'eps-neighborhoods', 'r', 2*5.};
+            obj.graph_options_ = {'eps-neighborhoods', 'r', 2*5.};
             if ~isfield(obj.params_, 'normalization'); obj.params_.normalization = 'random-walk'; end
         end
         
@@ -28,14 +28,14 @@ classdef laplacian_eigenmaps < manifold_learning
             if ~obj.is_laplacian_
                 switch obj.params_.normalization
                     case 'none'
-                        obj.laplacian_ = obj.degree - obj.similarity;
+                        
                     case 'random-walk'
-                        obj.laplacian_ = eye(obj.m_) - obj.degree\obj.similarity;
+                        
                     case 'symmetric'
-                        obj.laplacian_ = eye(obj.m_) - obj.degree^-0.5*obj.similarity*obj.degree^-0.5;
+                        
                     otherwise
-                        error('Normalization not present')
-                end
+                        error('Normalization not pres')
+                obj.laplacian_ = obj.degree - obj.similarity;
                 obj.is_laplacian_ = true;
             end
             
