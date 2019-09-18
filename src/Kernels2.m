@@ -5,7 +5,7 @@ function [f, varargout] = Kernels2(type, param)
 switch type      
 
     case 'gauss'
-        [f, varargout{1}, varargout{2}] = rbf(param);
+        [f, varargout{1}, varargout{2}] = rbf_test(param);
         
     case 'gauss_compact'
         [f, varargout{1}, varargout{2}] = rbf_compact(param);

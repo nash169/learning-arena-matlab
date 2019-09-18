@@ -2,7 +2,7 @@
 clear; close all; clc;
 
 %% Load demos
-load 2attracts_simple.mat;
+load 2as_3t.mat;
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
 

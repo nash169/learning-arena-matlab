@@ -1,23 +1,23 @@
 close all; clear; clc;
 
 %% Load demos
-load PaperTest2.mat;
-demo = DataStruct.demo;
-demo_struct = DataStruct.demo_struct;
+% load PaperTest2.mat;
+% demo = DataStruct.demo;
+% demo_struct = DataStruct.demo_struct;
 % demo = ReducedData(demo, 10);
 % [demo] = RegularizeTraj(demo);
 
 %% Process data
-proc_options = struct('center_data', false,...
-                      'tol_cutting', 1.,...
-                      'dt', 0.1...
-                      );
-[X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
+% proc_options = struct('center_data', false,...
+%                       'tol_cutting', 1.,...
+%                       'dt', 0.1...
+%                       );
+% [X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
 %%
 
 % X = X(:,825:end);
-x_train = X(1:2,:)';
-v_train = X(3:4,:)';
+% x_train = X(1:2,:)';
+% v_train = X(3:4,:)';
 % x_a = (x_train(84,:) + x_train(156,:) + x_train(227,:))/3;
 % v_train = v_train/norm(max(v_train));
 
@@ -27,10 +27,10 @@ ys = linspace(0, 100, 100);
 x = [Xs(:),Ys(:)];
 
 %% Draw data
-draw_options = struct('plot_pos', true,...  % Draw the demonstrated positions
-                      'plot_vel', false...  % Draw the demonstrated velocities
-                      );
-fig_pos = DrawData(X, targets, draw_options);
+% draw_options = struct('plot_pos', true,...  % Draw the demonstrated positions
+%                       'plot_vel', false...  % Draw the demonstrated velocities
+%                       );
+% fig_pos = DrawData(X, targets, draw_options);
 
 %% Manual Data
 % x_test = [15,50
