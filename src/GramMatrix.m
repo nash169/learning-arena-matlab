@@ -33,7 +33,7 @@ end
 
 % Matrix Normalization
 % For Vector-Valued RKHS matrices this likely change the final result if
-% done before or after the expansion of the matric.
+% done before or after the expansion of the matrix.
 if norm && m==n
     column_sums = sum(K,1) / m;
     total_sum   = sum(column_sums,2) / m;
