@@ -1,18 +1,19 @@
 clear; close all; clc;
 
 %% Load demos
-load 2attracts_simple.mat;
+load 2as_3t.mat;
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
 % If you want to consider only a reduced number of data points for each
 % demonstrated trajectory -> demo = ReducedData(demo, num_points);
 
 %% Process data
-proc_options = struct('center_data', false,...
-                      'tol_cutting', 1.,...
-                      'dt', 0.1...
-                      );
-[X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
+preprocess_options = struct('center_data', false,...
+                            'calc_vel', true, ...
+                            'tol_cutting', 0.01, ...
+                            'smooth_window', 25 ...
+                            );
+[X, ~, ~, targets, ~] = ProcessDemos(demo, demo_struct, 2, preprocess_options);
 x_i = X(1:2,:)';
 
 %% Draw data
@@ -43,11 +44,11 @@ kpca = KernelPCA(x_i, learn_options);
 plot_options = struct('xlims', [0 100],...        % 1x2 vector  
                       'ylims', [0 100],...        % 1x2 vector
                       'resoultion', 'medium',...  % ['low','medium','high']
-                      'type', '2D',...            % ['2D','3D']
+                      'type', '3D',...            % ['2D','3D']
                       'components', 1:2,...       % 1xn vector or scalar
                       'plot_data', true,...       % [true,false]
                       'labels', X(end,:),...      % 1xm vector 
-                      'plot_stream', true,...     % [true,false]
+                      'plot_stream', false,...     % [true,false]
                       'plot_eigens', true,...    % [true,false]
                       'plot_mapped', '3D',...     % ['2D','3D',false]
                       'plot_projData', false...   % [true,false]

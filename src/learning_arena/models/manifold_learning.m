@@ -30,6 +30,7 @@ classdef manifold_learning < handle
             [obj.m_, obj.d_] = size(data);
             
             obj.is_data_ = true;
+            obj.is_colors_ = false;
             obj.reset;
         end
         
@@ -69,6 +70,12 @@ classdef manifold_learning < handle
             obj.reset;
         end
         
+        % Set colors for data and embedding plot
+        function set_colors(obj, colors)
+           obj.colors_ = colors;
+           obj.is_colors_ = true;
+        end
+        
         % Get the similarity matrix. The graph is automatically applied to
         % the similarity if present
         function S = similarity(obj, data)
@@ -83,7 +90,7 @@ classdef manifold_learning < handle
                 obj.is_similarity_ = true;
             end
             
-            S = obj.similarity_;
+            if nargout > 0; S = obj.similarity_; end
         end
         
         % Solve the (generalized) eigenvalue problem. By default both the
@@ -117,7 +124,7 @@ classdef manifold_learning < handle
             if nargin > 2; obj.graph_options_ = varargin; end
             
             if ~obj.is_graph_
-                obj.graph_ = graph_build(obj.data_, obj.graph_options_{:});
+                obj.graph_ = full(graph_build(obj.data_, obj.graph_options_{:}));
                 obj.is_graph_ = true;
                 obj.with_graph_ = true;
             end
@@ -186,31 +193,76 @@ classdef manifold_learning < handle
             title(['Spectrum from eigenvalue ', num2str(num_eig(1)), ' to ', num2str(num_eig(end))])
         end
         
-        % Plot embedding
-        function fig = plot_embedding(obj, space, fig)
-            if nargin < 2; space = [1,2]; end
-            if nargin < 3; fig = figure; else; figure(fig); end
-            assert(length(space)~=1, '1D?')
+        function fig = plot_data(obj, data, colors, fig)
+            if nargin > 1 
+                obj.set_data(data); 
+            else
+                assert(obj.is_data_, 'Data not present')
+            end
             
+            if nargin > 2
+                obj.colors_ = colors;
+            elseif ~obj.is_colors_
+                obj.set_colors(linspace(1,10,obj.m_));
+            end
+            
+            if nargin < 4; fig = figure; else; figure(fig); hold on; end
+            
+            if obj.d_ == 2
+                scatter(obj.data_(:,1), obj.data_(:,2), 40, obj.colors_, 'filled','MarkerEdgeColor',[0 0 0])
+            else
+                scatter3(obj.data_(:,1), obj.data_(:,2), obj.data_(:,3), 40, obj.colors_, 'filled','MarkerEdgeColor',[0 0 0])
+            end
+            axis equal; grid on
+        end
+        
+        % Plot embedding
+        function fig = plot_embedding(obj, space, colors, fig)
+            if nargin < 2; space = [1,2]; end
+            if nargin < 4; fig = figure; else; figure(fig); hold on; end
+            
+            if nargin > 2
+                obj.colors_ = colors;
+            elseif ~obj.is_colors_
+                obj.set_colors(linspace(1,10,obj.m_));
+            end
+            
+            assert(length(space)~=1, '1D?')
             U = obj.embedding(space);
             
             if length(space) == 2
-                scatter(U(:,1),U(:,2), 20, 'r','filled','MarkerEdgeColor',[0 0 0]);
+                scatter(U(:,1),U(:,2), 40, obj.colors_,'filled','MarkerEdgeColor',[0 0 0]);
                 title(['Embedding space of eigenvectors: ', num2str(space(1)), ' and ', num2str(space(2))]);
             else
-                scatter3(U(:,1),U(:,2),U(:,3), 20, 'r','filled','MarkerEdgeColor',[0 0 0]);
+                scatter3(U(:,1),U(:,2),U(:,3), 40, obj.colors_,'filled','MarkerEdgeColor',[0 0 0]);
                 title(['Embedding space of eigenvectors: ', num2str(space(1)), ', ', num2str(space(2)), ' and ', num2str(space(3))]);
             end
             grid on;
         end
         
         % Plot graph
-        function fig = plot_graph(obj)
+        function fig = plot_graph(obj, space_type, space)
+            assert(obj.is_data_, 'Data not present')
+            
+            if nargin < 2; space_type = 'original'; end
+            if nargin < 3; space = 1:obj.d_; end
+            
+            switch space_type
+                case 'original'
+                    data = obj.data_;
+                case 'embedding'
+                    data = obj.embedding(space);
+                otherwise
+                    error('Space not found')
+            end
+            
             G = digraph(obj.graph);
-            nodes = {'XData', obj.data_(:,1), 'YData', obj.data_(:,2)};
-            if obj.d_ > 2; nodes = [nodes, 'ZData', obj.data_(:,3)]; end
+            nodes = {'XData', data(:,1), 'YData', data(:,2)};
+            if size(data,2) > 2; nodes = [nodes, 'ZData', data(:,3)]; end
+            
             fig = figure;
             plot(G, nodes{:});
+            title(['Graph in ', space_type, ' space']);
         end
         
         % Plot similarity matrix
@@ -292,6 +344,10 @@ classdef manifold_learning < handle
         eig_
         left_vec_
         is_eigen_
+        
+        % Data colors
+        colors_
+        is_colors_
     end
 end
 

@@ -44,6 +44,8 @@ kp.plot_similarity;
 dm = diffusion_maps;
 % Set the dataset
 dm.set_data(data);
+% Set graph options
+dm.graph_options('type', 'k-nearest', 'k', 10);
 % Get the similarity matrix
 S_dm = dm.similarity;
 % Get the degree matrix (of the similarity)
@@ -69,8 +71,6 @@ dm.plot_similarity;
 % Solve the eigensystem for the infinitesimal
 dm.set_params('operator', 'infinitesimal');
 [D_l,V_l,W_l] = dm.eigensolve;
-% Set graph
-% dm.set_graph(G);
 
 %% Laplacian Eigenmaps
 le = laplacian_eigenmaps;
