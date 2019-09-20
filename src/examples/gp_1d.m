@@ -17,9 +17,8 @@ noise_std = 0.2;
 signal_std = 6.2;
 myrbf = rbf('sigma', length, 'sigma_n', noise_std, 'sigma_f', signal_std);
 
-mygp = gaussian_process('kernel', myrbf, 'targets', y_noisy);
-mygp.set_data(x_train);
-mygp.set_grid(1000, -20, 20);
+mygp = gaussian_process('kernel', myrbf, 'target', y_noisy, 'reference', x_train);
+mygp.set_data(1000, -20, 20);
 
 options = struct;
 mygp.plot(options, h, 'b');

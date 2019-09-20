@@ -1,3 +1,4 @@
+% Test to check which is the fastest way to build identity sparse matrices.
 clear; close all; clc;
 
 num_points = 100000;

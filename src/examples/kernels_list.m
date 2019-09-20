@@ -1,14 +1,14 @@
-clear; clc;
+clear; close all; clc;
 
 % Data
-res = 500;
+res = 200;
 x_train = [25., 50.; 50, 50; 75, 50];
 v_field = [10,10; 0, 10; 10, 0];
 weights = [0; 1; 0];
 
 % Kernels' parameters
 U = gs_orthogonalize([1,1]);
-D1 = [1/3^2;1/2^2].*eye(2);
+D1 = [1/5^2;1/4^2].*eye(2);
 % D1 = [3^2;2^2].*eye(2);
 D2 = [1/2^2;1/3^2].*eye(2);
 D3 = [1/5^2;1/4^2].*eye(2);
@@ -26,19 +26,16 @@ sigma_fulld = [S1; S2; S3];
 % Options of the expansion plot
 ops_exps = struct( ...
     'grid', [0 100; 0 100], ...
-    'res', 100, ...
+    'res', res, ...
     'plot_data', false, ...
     'plot_stream', true ...
     );
-psi = kernel_expansion;
-psi.set_data(x_train);
-psi.set_grid(res, 0, 100, 0, 100);
-psi.set_params('weights', weights);
+psi = kernel_expansion('reference', x_train, 'weights', weights);
+psi.set_data(res, 0, 100, 0, 100);
 
 %% RBF isotropic
 myrbf = rbf;
-myrbf.set_params('sigma', sigma_iso, 'sigma_f', 1., 'sigma_n', 0.);
-% myrbf.set_optionals('sigma_inv', sigma_full, 'compact', 0.01);
+myrbf.set_params('sigma', sigma_iso, 'sigma_f', 1., 'sigma_n', 0.); % , 'sigma_inv', sigma_full, 'compact', 0.05
 psi.set_params('kernel', myrbf);
 psi.plot;
 psi.contour(ops_exps);

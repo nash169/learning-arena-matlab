@@ -2,14 +2,15 @@ classdef velocity_oriented < rbf
     %VELOCITY_ORIENTED Summary of this class goes here
     %   Detailed explanation goes here
     
+%=== PUBLIC ===%
     methods
         function obj = velocity_oriented(varargin)
             %VELOCITY_ORIENTED Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@rbf(varargin{:});
 
-            if ~isfield(obj.params_, 'weights'); obj.params_.weights = [2.5,5]; end
-            if ~isfield(obj.params_, 'weight_fun'); obj.params_.weight_fun = @obj.weighted_norm; end       
+            if ~isfield(obj.h_params_, 'weights'); obj.h_params_.weights = [2.5,5]; end
+            if ~isfield(obj.h_params_, 'weight_fun'); obj.h_params_.weight_fun = @obj.weighted_norm; end       
         end
         
         function set_params(obj, varargin)
@@ -23,10 +24,11 @@ classdef velocity_oriented < rbf
         end
     end
     
+%=== PROTECTED ===%
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.params_name_ = {'v_field', 'weights', 'weight_fun', 'sigma_f', 'sigma_n'};
+            obj.h_params_list_ = {'v_field', 'weights', 'weight_fun', 'sigma_f', 'sigma_n'};
         end
         
         function check(obj)
@@ -37,8 +39,8 @@ classdef velocity_oriented < rbf
         end
         
         function covariance(obj)
-            v_field = repmat(obj.params_.v_field,obj.n_,1);
-            lambdas = obj.params_.weight_fun(v_field, obj.params_.weights(1), obj.params_.weights(2)); %  obj.params_.weight_fun
+            v_field = repmat(obj.h_params_.v_field,obj.n_,1);
+            lambdas = obj.h_params_.weight_fun(v_field, obj.h_params_.weights(1), obj.h_params_.weights(2)); %  obj.h_params_.weight_fun
             D = sparse(1:obj.m_*obj.n_*obj.d_,1:obj.m_*obj.n_*obj.d_, ...
                 1./reshape(lambdas',[],1), ...
                 obj.m_*obj.n_*obj.d_, obj.m_*obj.n_*obj.d_);

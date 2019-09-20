@@ -1,21 +1,23 @@
 classdef cosine < abstract_kernel
     %COSINE Summary of this class goes here
     %   Detailed explanation goes here
-    
+
+%=== PUBLIC ===%
     methods
         function obj = cosine(varargin)
             %COSINE Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@abstract_kernel(varargin{:});
 
-            if ~isfield(obj.params_, 'scale'); obj.params_.scale = 1; end
+            if ~isfield(obj.h_params_, 'scale'); obj.h_params_.scale = 1; end
         end
     end
-    
+  
+%=== PROTECTED ===%
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.params_name_ = ['scale', obj.params_name_];
+            obj.h_params_list_ = ['scale', obj.h_params_list_];
         end
         
         function d = num_params(obj, name)
@@ -28,7 +30,7 @@ classdef cosine < abstract_kernel
         end
         
         function [vec, counter] = pvec(obj, name, vec, counter)
-           vec(counter+1) = obj.params_.(name); % name = 'scale'
+           vec(counter+1) = obj.h_params_.(name); % name = 'scale'
            counter = counter + 1; 
         end
 

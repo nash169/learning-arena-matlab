@@ -190,7 +190,7 @@ classdef gauss_normal < handle
                   hold on;
                   axis equal;
                   if obj.fig_options_.plot_stream
-                      obj.gradient_pdf;
+                      obj.pdf_grad;
                       streamslice(obj.grid_{1}, obj.grid_{2}, ...
                           reshape(obj.dpdf_.data(:,1),size(obj.grid_{1},1),size(obj.grid_{1},2)), ...
                           reshape(obj.dpdf_.data(:,2),size(obj.grid_{1},1),size(obj.grid_{1},2)));

@@ -1,17 +1,21 @@
 classdef rbf < abstract_kernel
     %ANISOTROPIC_RBF Summary of this class goes here
     %   Detailed explanation goes here
+    
+%=== PUBLIC ===%
     methods
         function obj = rbf(varargin)    
             obj = obj@abstract_kernel(varargin{:});
             obj.is_data_dep_ = true;
             obj.is_sigma_inv_ = false;
             obj.is_chol_ = false;
+            if ~isfield(obj.params_, 'sigma_inv'); obj.params_.sigma_inv = false; end
         end
 
         function set_params(obj, varargin)
             set_params@abstract_kernel(obj, varargin{:});          
-            if logical(sum(strcmp(varargin(1:2:end), 'sigma')))
+            if logical(sum(strcmp(varargin(1:2:end), 'sigma'))) || ...
+               logical(sum(strcmp(varargin(1:2:end), 'sigma_inv')))
                 obj.is_sigma_inv_ = false;
             end
         end
@@ -20,19 +24,27 @@ classdef rbf < abstract_kernel
             set_data@abstract_kernel(obj, varargin{:});
             if obj.is_data_dep_; obj.is_sigma_inv_ = false; end
         end
-        
-        function set_optionals(obj, varargin)
-            set_optionals@abstract_kernel(obj, varargin{:});
-            obj.is_sigma_inv_ = false;
-            obj.reset;
-        end
     end
+    
+%=== PROTECTED ===% 
+    properties (Access = protected)
+        type_cov_;      % Type of covariance matrix 
+        num_h_params_;  % Number of hyperparameters
         
+        sigma_inv_;     % Inverse of covariance matrix
+        is_sigma_inv_;  % Bool presence of the covariance matrix
+        
+        chol_;          % Cholesy decomposition of the covariace matrix
+        is_chol_;       % Bool presence cholesky L matrix
+        
+        is_data_dep_;   % Check if the covariance matrix is data dependent
+    end
+    
     methods (Access = protected)
         function signature(obj)
              obj.type_ = {'scalar_valued'};
-             obj.params_name_ = ['sigma', obj.params_name_];
-             obj.optionals_name_ = ['sigma_inv', obj.optionals_name_];
+             obj.h_params_list_ = ['sigma', obj.h_params_list_];
+             obj.params_list_ = ['sigma_inv', obj.params_list_];
         end
         
         function check(obj)
@@ -54,7 +66,7 @@ classdef rbf < abstract_kernel
         
         function [vec, counter] = pvec(obj, name, vec, counter)
            vec(counter+1:counter+obj.num_h_params_) = ...
-               c_reshape(obj.params_.(name), [], 1); % name = 'sigma'
+               c_reshape(obj.h_params_.(name), [], 1); % name = 'sigma'
            counter = counter + obj.num_h_params_; 
         end
 
@@ -139,8 +151,8 @@ classdef rbf < abstract_kernel
             
             switch obj.type_cov_
                 case 1
-                    dp = obj.diff_.^2./obj.params_.sigma.^3.*obj.kernel;
-                    if size(obj.params_.sigma,2) == 1; dp = sum(dp,2); end
+                    dp = obj.diff_.^2./obj.h_params_.sigma.^3.*obj.kernel;
+                    if size(obj.h_params_.sigma,2) == 1; dp = sum(dp,2); end
                 case 2
                     x = (obj.sigma_inv_*obj.diff_')';
                     xt = obj.diff_*obj.sigma_inv_;
@@ -155,10 +167,10 @@ classdef rbf < abstract_kernel
         % Automatically establishes the type of covariace matrix depending
         % on what has been as 'sigma' of the structure params_
         function set_sigma(obj)
-            if isfield(obj.optionals_, 'sigma_inv')
-                obj.num_h_params_ = numel(obj.optionals_.sigma_inv);
+            if obj.params_.sigma_inv
+                obj.num_h_params_ = numel(obj.params_.sigma_inv);
             else
-                obj.num_h_params_ = numel(obj.params_.sigma);
+                obj.num_h_params_ = numel(obj.h_params_.sigma);
             end
             obj.type_cov_ = 1;
             obj.is_sigma_inv_ = true;
@@ -166,49 +178,49 @@ classdef rbf < abstract_kernel
             switch obj.num_h_params_
                 % Spherical covariance matrix (isotropic RBF)
                 case 1
-                    obj.sigma_inv_ = 1/obj.params_.sigma^2;
+                    obj.sigma_inv_ = 1/obj.h_params_.sigma^2;
                     obj.is_data_dep_ = false;      
                 % Spherical m-points dependent
                 case obj.m_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_, 1);
-                    obj.sigma_inv_ = repmat(1./obj.params_.sigma.^2, obj.n_, 1);      
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_, 1);
+                    obj.sigma_inv_ = repmat(1./obj.h_params_.sigma.^2, obj.n_, 1);      
                 % Spherical m-points dependent
                 case obj.n_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.n_, 1);
-                    obj.sigma_inv_ = repelem(1./obj.params_.sigma.^2, obj.m_, 1);     
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.n_, 1);
+                    obj.sigma_inv_ = repelem(1./obj.h_params_.sigma.^2, obj.m_, 1);     
                 % Spherical mn-points dependent    
                 case obj.m_*obj.n_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_*obj.n_, 1);
-                    obj.sigma_inv_ = 1./obj.params_.sigma.^2;           
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_*obj.n_, 1);
+                    obj.sigma_inv_ = 1./obj.h_params_.sigma.^2;           
                 % Diagonal covariance matrix
                 case obj.d_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, 1, obj.d_);
-                    obj.sigma_inv_ = 1./obj.params_.sigma.^2;
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, 1, obj.d_);
+                    obj.sigma_inv_ = 1./obj.h_params_.sigma.^2;
                     obj.is_data_dep_ = false;          
                 % Diagonal m-points dependent    
                 case obj.m_*obj.d_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_, obj.d_);
-                    obj.sigma_inv_ = repmat(1./obj.params_.sigma.^2, obj.n_, 1);
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_, obj.d_);
+                    obj.sigma_inv_ = repmat(1./obj.h_params_.sigma.^2, obj.n_, 1);
                 % Diagonal n-points dependent
                 case obj.n_*obj.d_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.n_, obj.d_);
-                    obj.sigma_inv_ = repelem(1./obj.params_.sigma.^2, obj.m_, 1); 
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.n_, obj.d_);
+                    obj.sigma_inv_ = repelem(1./obj.h_params_.sigma.^2, obj.m_, 1); 
                 % Diagonal mn-points dependent    
                 case obj.m_*obj.n_*obj.d_
-                    obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_*obj.n_, obj.d_);
-                    obj.sigma_inv_ = 1./obj.params_.sigma.^2;
+                    obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_*obj.n_, obj.d_);
+                    obj.sigma_inv_ = 1./obj.h_params_.sigma.^2;
                 % Full covariance matrix (anisotropic RBF)
                 case obj.d_^2
-                    if isfield(obj.optionals_, 'sigma_inv')
-                        if obj.num_h_params_ == length(obj.optionals_.sigma_inv)
-                            obj.optionals_.sigma_inv = c_reshape(obj.optionals_.sigma_inv, obj.d_, obj.d_);
+                    if obj.params_.sigma_inv
+                        if obj.num_h_params_ == length(obj.params_.sigma_inv)
+                            obj.params_.sigma_inv = c_reshape(obj.params_.sigma_inv, obj.d_, obj.d_);
                         end
-                        obj.sigma_inv_ = obj.optionals_.sigma_inv;
+                        obj.sigma_inv_ = obj.params_.sigma_inv;
                     else
-                        if obj.num_h_params_ == length(obj.params_.sigma)
-                            obj.params_.sigma = c_reshape(obj.params_.sigma, obj.d_, obj.d_);
+                        if obj.num_h_params_ == length(obj.h_params_.sigma)
+                            obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.d_, obj.d_);
                         end
-                        obj.sigma_ = obj.params_.sigma; % The store is sigma migh useless
+                        obj.sigma_ = obj.h_params_.sigma; % The store is sigma migh useless
                         % Try cholesky decomposition of the matrix
                         obj.chol_ = chol(obj.sigma_);
                         obj.is_chol_ = true;
@@ -217,46 +229,46 @@ classdef rbf < abstract_kernel
                     obj.is_data_dep_ = false;  
                 % Full m-points dependent    
                 case obj.m_*obj.d_^2
-                    if isfield(obj.optionals_, 'sigma_inv')
-                        if obj.num_h_params_ == length(obj.optionals_.sigma_inv)
-                            obj.optionals_.sigma_inv = c_reshape(obj.optionals_.sigma_inv, obj.m_*obj.d_, obj.d_);
+                    if obj.params_.sigma_inv
+                        if obj.num_h_params_ == length(obj.params_.sigma_inv)
+                            obj.params_.sigma_inv = c_reshape(obj.params_.sigma_inv, obj.m_*obj.d_, obj.d_);
                         end
-                        obj.sigma_inv_ = repmat(obj.optionals_.sigma_inv, obj.n_, 1);
+                        obj.sigma_inv_ = repmat(obj.params_.sigma_inv, obj.n_, 1);
                     else
-                        if obj.num_h_params_ == length(obj.params_.sigma)
-                            obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_*obj.d_, obj.d_);
+                        if obj.num_h_params_ == length(obj.h_params_.sigma)
+                            obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_*obj.d_, obj.d_);
                         end
-                        obj.sigma_ = repmat(obj.params_.sigma, obj.n_, 1); % The store is sigma migh useless
+                        obj.sigma_ = repmat(obj.h_params_.sigma, obj.n_, 1); % The store is sigma migh useless
                         error('Cholesky decomposition for multiple covariance matrices')
                     end
                     obj.type_cov_ = 3;     
                 % Full n-points dependent
                 case obj.n_*obj.d_^2
-                    if isfield(obj.optionals_, 'sigma_inv')
-                        if obj.num_h_params_ == length(obj.optionals_.sigma_inv)
-                            obj.optionals_.sigma_inv = c_reshape(obj.optionals_.sigma_inv, obj.n_*obj.d_, obj.d_);
+                    if obj.params_.sigma_inv
+                        if obj.num_h_params_ == length(obj.params_.sigma_inv)
+                            obj.params_.sigma_inv = c_reshape(obj.params_.sigma_inv, obj.n_*obj.d_, obj.d_);
                         end
-                        obj.sigma_inv_ = repelem(obj.optionals_.sigma_inv, obj.m_, 1);
+                        obj.sigma_inv_ = repelem(obj.params_.sigma_inv, obj.m_, 1);
                     else
-                        if obj.num_h_params_ == length(obj.params_.sigma)
-                            obj.params_.sigma = c_reshape(obj.params_.sigma, obj.n_*obj.d_, obj.d_);
+                        if obj.num_h_params_ == length(obj.h_params_.sigma)
+                            obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.n_*obj.d_, obj.d_);
                         end
-                        obj.sigma_ = repelem(obj.params_.sigma, obj.m_, 1); % The store is sigma migh useless
+                        obj.sigma_ = repelem(obj.h_params_.sigma, obj.m_, 1); % The store is sigma migh useless
                         error('Cholesky decomposition for multiple covariance matrices')
                     end
                     obj.type_cov_ = 3;             
                 % Full mn-points dependent   
                 case obj.m_*obj.n_*obj.d_^2
-                    if isfield(obj.optionals_, 'sigma_inv')
-                        if obj.num_h_params_ == length(obj.optionals_.sigma_inv)
-                            obj.optionals_.sigma_inv = c_reshape(obj.optionals_.sigma_inv, obj.m_*obj.n_*obj.d_, obj.d_);
+                    if obj.params_.sigma_inv
+                        if obj.num_h_params_ == length(obj.params_.sigma_inv)
+                            obj.params_.sigma_inv = c_reshape(obj.params_.sigma_inv, obj.m_*obj.n_*obj.d_, obj.d_);
                         end
-                        obj.sigma_inv_ = obj.optionals_.sigma_inv;
+                        obj.sigma_inv_ = obj.params_.sigma_inv;
                     else
-                        if obj.num_h_params_ == length(obj.params_.sigma)
-                            obj.params_.sigma = c_reshape(obj.params_.sigma, obj.m_*obj.n_*obj.d_, obj.d_);
+                        if obj.num_h_params_ == length(obj.h_params_.sigma)
+                            obj.h_params_.sigma = c_reshape(obj.h_params_.sigma, obj.m_*obj.n_*obj.d_, obj.d_);
                         end
-                        obj.sigma_ = obj.params_.sigma; % The store is sigma migh useless
+                        obj.sigma_ = obj.h_params_.sigma; % The store is sigma migh useless
                         error('Cholesky decomposition for multiple covariance matrices')
                     end
                     obj.type_cov_ = 3;
@@ -265,21 +277,6 @@ classdef rbf < abstract_kernel
                     error('Case not recognized');
             end
         end
-    end
-    
-    properties (Access = protected)
-        type_cov_;      % Type of covariance matrix 
-        num_h_params_;  % Number of hyperparameters
-        
-        sigma_;         % Covariance matrix (usually it's present just for the 'full' case)
-        
-        sigma_inv_;     % Inverse of covariance matrix
-        is_sigma_inv_;  % Bool presence of the covariance matrix
-        
-        chol_;          % Cholesy decomposition of the covariace matrix
-        is_chol_;       % Bool presence cholesky L matrix
-        
-        is_data_dep_;   % Check if the covariance matrix is data dependent
     end
 end
 

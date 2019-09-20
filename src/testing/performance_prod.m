@@ -1,3 +1,6 @@
+% Test to compare my matrix_prod to multiply multiple matrices in
+% vectorized way with buildig sparse block-diagonal matrices and then
+% multiply them.
 clear; close all; clc;
 
 dim = 2;

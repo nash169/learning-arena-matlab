@@ -22,6 +22,7 @@ classdef kernel_pca < manifold_learning
         
         function [V,D,W] = solve(obj)
             S = obj.normalize/obj.m_;
+            S = obj.similarity/obj.m_;
             [V,D,W] = eig(S);
             [a, b] = sort(diag(D),'descend');
             D = diag(a);

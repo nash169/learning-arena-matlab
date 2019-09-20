@@ -2,21 +2,23 @@ classdef polynomial < abstract_kernel
     %POLYNOM Summary of this class goes here
     %   Detailed explanation goes here
     
+%=== PUBLIC ===%
     methods
         function obj = polynomial(varargin)
             %POLYNOM Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@abstract_kernel(varargin{:});
 
-            if ~isfield(obj.params_, 'degree'); obj.params_.degree = 1; end
-            if ~isfield(obj.params_, 'const'); obj.params_.const = 0; end
+            if ~isfield(obj.h_params_, 'degree'); obj.h_params_.degree = 1; end
+            if ~isfield(obj.h_params_, 'const'); obj.h_params_.const = 0; end
         end
     end
     
+%=== PROTECTED ===%
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.params_name_ = ['degree', 'const', obj.params_name_];
+            obj.h_params_list_ = ['degree', 'const', obj.h_params_list_];
         end
         
         function d = num_params(obj, name)
@@ -29,12 +31,12 @@ classdef polynomial < abstract_kernel
         end
         
         function [vec, counter] = pvec(obj, name, vec, counter)
-           vec(counter+1) = obj.params_.(name); % name = 'const, degree'
+           vec(counter+1) = obj.h_params_.(name); % name = 'const, degree'
            counter = counter + 1; 
         end
 
         function k = calc_kernel(obj)
-            k = (sum(obj.Data_{1}.*obj.Data_{2},2) + obj.params_.const).^obj.params_.degree;
+            k = (sum(obj.Data_{1}.*obj.Data_{2},2) + obj.h_params_.const).^obj.h_params_.degree;
         end
 
         function dk = calc_gradient(obj, var)

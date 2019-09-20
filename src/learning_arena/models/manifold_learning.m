@@ -144,7 +144,7 @@ classdef manifold_learning < handle
             funs = zeros(size(x,1), length(vecs));
             for i = 1:length(vecs)
                 obj.expansion_.set_params('weights', obj.right_vec_(:,vecs(i)));
-                funs(:,i) = obj.expansion_.expansion(obj.data_,x);
+                funs(:,i) = obj.expansion_.expansion(x);
             end
         end
         
@@ -290,8 +290,7 @@ classdef manifold_learning < handle
             end
             
             if ~obj.is_expansion_
-                obj.expansion_ = kernel_expansion('kernel', obj.params_.kernel);
-                obj.expansion_.set_data(obj.data_);
+                obj.expansion_ = kernel_expansion('kernel', obj.params_.kernel, 'reference', obj.data_);
                 obj.is_expansion_ = true;
             end
         end

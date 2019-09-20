@@ -18,9 +18,8 @@ noise_std = 0.2;
 signal_std = 6.2;
 myrbf = rbf('sigma', sigma, 'sigma_n', noise_std, 'sigma_f', signal_std);
 
-mygp = gaussian_process('kernel', myrbf, 'targets', Z_noisy(:));
-mygp.set_data([X_sampled(:),Y_sampled(:)]);
-mygp.set_grid(201, -10, 10, -10, 10);
+mygp = gaussian_process('kernel', myrbf, 'target', Z_noisy(:), 'reference', [X_sampled(:),Y_sampled(:)]);
+mygp.set_data(201, -10, 10, -10, 10);
 
 tic;
 x = mygp.optimize('sigma', 'sigma_n','sigma_f');

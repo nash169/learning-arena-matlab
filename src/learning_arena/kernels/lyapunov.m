@@ -2,6 +2,7 @@ classdef lyapunov < abstract_kernel
     %LYAPUNOV Summary of this class goes here
     %   Detailed explanation goes here
     
+%=== PUBLIC ===%
     methods
         function obj = lyapunov(varargin)
             %LYAPUNOV Construct an instance of this class
@@ -10,16 +11,22 @@ classdef lyapunov < abstract_kernel
         end
     end
     
+%=== PROTECTED ===%
+    properties (Access = protected)
+        v_field_;
+        is_field_;
+    end
+    
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.params_name_ = ['kernel', 'v_field', obj.params_name_];
+            obj.h_params_list_ = ['kernel', 'v_field', obj.h_params_list_];
         end
         
         function check(obj)
             check@abstract_kernel(obj);
             if ~obj.is_field_
-                obj.v_field_ = repmat(obj.params_.v_field,obj.n_,1);
+                obj.v_field_ = repmat(obj.h_params_.v_field,obj.n_,1);
                 obj.is_field_ = true;
             end
         end
@@ -39,14 +46,14 @@ classdef lyapunov < abstract_kernel
         end
         
         function k = calc_kernel(obj)
-            kernel = obj.params_.kernel.kernel;
-            kernel_grad = obj.params_.kernel.gradient;
+            kernel = obj.h_params_.kernel.kernel;
+            kernel_grad = obj.h_params_.kernel.gradient;
             k = kernel + sum(kernel_grad(:,:,1).*obj.v_field_,2);
         end
         
         function dk = calc_gradient(obj)
-            kernel_grad = obj.params_.kernel.gradient;
-            kernel_hess = obj.params_.kernel.hessian;
+            kernel_grad = obj.h_params_.kernel.gradient;
+            kernel_hess = obj.h_params_.kernel.hessian;
             
             dk = zeros(obj.m_*obj.n_, obj.d_, 2);
             dk(:,:,1) = kernel_grad(:,:,1) + c_reshape(sum(kernel_hess(:,:,1).*repelem(obj.v_field_,obj.d_,1),2), [], obj.d_);
@@ -58,11 +65,6 @@ classdef lyapunov < abstract_kernel
         
         function dp = calc_pgradient(obj, name)
         end
-    end
-    
-    properties (Access = protected)
-        v_field_;
-        is_field_;
     end
 end
 

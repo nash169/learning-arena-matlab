@@ -2,22 +2,26 @@ classdef euclidian
     %EUCLIDIAN Summary of this class goes here
     %   Detailed explanation goes here
     
+%=== PUBLIC ===%
     properties
-        Property1
+        
     end
     
     methods
-        function obj = euclidian(inputArg1,inputArg2)
+        function obj = euclidian(varargin)
             %EUCLIDIAN Construct an instance of this class
             %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+            
         end
+    end
+    
+%=== PROTECTED ===%
+    properties (Access = protected)
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
-        end
+    end
+    
+    methods (Access = protected)
+        
     end
 end
 
