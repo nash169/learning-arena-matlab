@@ -1,3 +1,3 @@
-# Multiple attractors Dynamical System Learning
+# Learning Arena
 
-This repository contains my project about learning energy Lyapunov-type function from multiple attractors dynamical systems.
+This repository contains various machine learning algorithms I'm using along my PhD.
