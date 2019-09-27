@@ -3,9 +3,12 @@ clear; close all; clc
 x_test = linspace(-20,20,1000)';
 y_real = sin(x_test);
  
-x_train = (-10:0.5:10)';
-a = -1; b = 1;
-y_noisy = sin(x_train) + a + (b-a).*rand(length(x_train),1);
+% x_train = (-10:0.5:10)';
+% a = -1; b = 1;
+% y_noisy = sin(x_train) + a + (b-a).*rand(length(x_train),1);
+
+load x_train.dat
+load y_noisy.dat
 
 h = figure;
 plot(x_test, y_real,'--r')
@@ -26,7 +29,7 @@ mygp.likelihood
 mygp.likelihood_grad('sigma', 'sigma_f', 'sigma_n')
 
 tic;
-x = mygp.optimize('sigma', 'sigma_n','sigma_f');
+x = mygp.optimize('sigma', 'sigma_f', 'sigma_n');
 toc;
 mygp.plot(options, h, 'g');
 

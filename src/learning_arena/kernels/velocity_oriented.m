@@ -33,12 +33,12 @@ classdef velocity_oriented < rbf
         
         function check(obj)
             check@abstract_kernel(obj);
-            if ~obj.is_sigma_inv_
-                obj.covariance;
+            if ~obj.is_covariance_
+                obj.velocity_cov;
             end
         end
         
-        function covariance(obj)
+        function velocity_cov(obj)
             v_field = repmat(obj.h_params_.v_field,obj.n_,1);
             lambdas = obj.h_params_.weight_fun(v_field, obj.h_params_.weights(1), obj.h_params_.weights(2)); %  obj.h_params_.weight_fun
             D = sparse(1:obj.m_*obj.n_*obj.d_,1:obj.m_*obj.n_*obj.d_, ...
