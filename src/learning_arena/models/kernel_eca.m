@@ -23,6 +23,15 @@ classdef kernel_eca < manifold_learning
             S = obj.entropy_;
         end
         
+        function fig = plot_entropy(obj, num_eig)
+            % Plot entropy contribution
+            if nargin < 2; num_eig = 1:10; end
+            S = obj.entropy;
+            fig = figure;
+            plot(num_eig, S(num_eig), '-o')
+            grid on
+            title(['Entropy contribution ', num2str(num_eig(1)), ' to ', num2str(num_eig(end))])
+        end
     end
     
 %=== PROTECTED ===%

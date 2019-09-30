@@ -14,7 +14,7 @@ switch space_type
         error('Space not found')
 end
 
-G = digraph(obj.graph);
+G = digraph(obj.graph, 'omitselfloops');
 nodes = {'XData', data(:,1), 'YData', data(:,2)};
 if size(data,2) > 2; nodes = [nodes, 'ZData', data(:,3)]; end
 

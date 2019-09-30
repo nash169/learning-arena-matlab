@@ -46,6 +46,8 @@ classdef manifold_learning < handle
         
         varargout = plot_eigenfun(obj, space, varargin)
         
+        varargout = plot_eigenvec(obj, space, type)
+        
         fig = plot_spectrum(obj, num_eig)
         
         fig = plot_data(obj, data, colors, fig)

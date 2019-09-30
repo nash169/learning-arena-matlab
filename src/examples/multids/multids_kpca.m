@@ -47,7 +47,7 @@ length = 5.;
 myrbf = rbf('sigma', length);
 
 % Set Kernel PCA
-kp = kernel_pca('kernel', myrbf);
+kp = kernel_pca('kernel', myrbf, 'centering', false);
 
 % Set colors
 colors = {'r', 'c'};
@@ -107,4 +107,6 @@ for i = 1 : ma_zero
 %     axis([0 100 0 100])
 %     hold on
 %     scatter(data_sub(:,1), data_sub(:,2), 40, colors{i}, 'filled','MarkerEdgeColor',[0 0 0])
+
+    kp.plot_eigenvec;
 end
