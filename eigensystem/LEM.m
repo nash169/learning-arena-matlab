@@ -1,17 +1,18 @@
 clear; close all; clc;
 
 %% Load demos
-load 2attracts_simple.mat;
+load 2as_3t.mat;
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
 % demo = ReducedData(demo, 3);
 
 %% Process data
-proc_options = struct('center_data', false,...
-                      'tol_cutting', 1.,...
-                      'dt', 0.1...
-                      );
-[X, targets] = ProcessDemos(demo, 2, demo_struct, proc_options);
+preprocess_options = struct('center_data', false,...
+                            'calc_vel', true, ...
+                            'tol_cutting', 0.01, ...
+                            'smooth_window', 25 ...
+                            );
+[X, ~, ~, targets, ~] = ProcessDemos(demo, demo_struct, 2, preprocess_options);
 x_i = X(1:2,:)';
 
 %% Draw data
