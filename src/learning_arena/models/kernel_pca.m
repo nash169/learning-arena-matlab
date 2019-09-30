@@ -6,23 +6,33 @@ classdef kernel_pca < manifold_learning
             %KERNEL_PCA Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@manifold_learning(varargin{:});
+            
             if  ~isfield(obj.params_, 'kernel')
                 obj.params_.kernel = rbf; 
                 obj.params_.kernel.set_params('sigma', 5.);
             end
+            
+            if  ~isfield(obj.params_, 'centering')
+                obj.params_.centering = true;
+            end
+            
             obj.with_graph_ = false;
         end
     end
     
     methods (Access = protected)
         function signature(obj)
-            obj.params_name_ = {'kernel'};
+            obj.params_name_ = {'kernel', 'centering'};
             obj.type_ = {'graph-less'};
         end
         
         function [V,D,W] = solve(obj)
-            S = obj.normalize/obj.m_;
-            S = obj.similarity/obj.m_;
+            if obj.params_.centering
+                S = obj.normalize/obj.m_;
+            else
+                S = obj.similarity/obj.m_;
+            end
+            
             [V,D,W] = eig(S);
             [a, b] = sort(diag(D),'descend');
             D = diag(a);

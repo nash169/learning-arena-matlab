@@ -1,65 +1,124 @@
-function W = GraphBuild(X, options)
+function [W, D] = GraphBuild(options, varargin)
 %GRAPHBUILD Summary of this function goes here
 %   Detailed explanation goes here
 
+% Cheking connection method options
 if isfield(options,'conntype')
     connType = options.conntype;
+    switch connType
+        case 'epsilon' % epsilon-neighborhoods method
+            if isfield(options,'eps')
+                eps = options.eps;
+            else
+                error('Define epsilon value (eps)');
+            end
+            
+        case 'threshold'
+            if isfield(options,'thr')
+                thr = options.thr;
+            else
+                error('Define threshold value (thr)');
+            end
+            
+        case 'n-nearest' % n nearest neighborhoods method
+            if isfield(options,'n_nearest')
+                n_nearest = options.n_nearest;
+            else
+                error('Define number of nearest neighborhoods (n_nearest)');
+            end
+            
+        otherwise
+            error('Define connection method (conntype)');
+    end
 else
     error('Connection type not defined');
 end
 
-if isfield(options,'sim_fun')
-    f = options.sim_fun;
+% Check isnan value to set
+if isfield(options,'isnan_value')
+    isnan_value = options.isnan_value;
+else
+    isnan_value = 0;
+end
+
+% Checking kernel options
+if isfield(options,'kernel')
+    if isa(options.kernel,'function_handle')
+        f = options.kernel;
+    else
+        if isfield(options,'kparam')
+            f = Kernels(option.kernel, option.kparam);
+        else
+            error('Define kernel parameteres (kparam)');
+        end
+    end
 else
     f = Kernels('euclid_dist');
 end
 
+% Cheking graph & matrix plot options
 if isfield(options,'plot_graph')
     plot_graph = options.plot_graph;
+    if isfield(options,'nodes')
+        nodes = options.nodes;
+    else
+        error('Define nodes for plotting the graph (nodes)');
+    end
 else
     plot_graph = false;
 end
 
-[m,n] = size(X);
-gram_options = struct('norm', false,...
-                      'vv_rkhs', false);
-
-if n==4
-    x_pos = X(:,1:2);
-    x_vel = X(:,3:4);
-elseif n==6
-    x_pos = X(:,1:3);
-    x_vel = X(:,4:6);
+if isfield(options,'plot_matrix')
+    plot_matrix = options.plot_matrix;
+    if isfield(options, 'matrix_type')
+        matrix_type = options.matrix_type;
+    else
+        matrix_type = 'sgn_mat';
+    end
 else
-    x_pos = X;
+    plot_matrix = false;
 end
 
+
+gram_options = struct('norm', false,...
+                      'vv_rkhs', false);
+                  
+D = GramMatrix(f, gram_options, varargin{:});
+D(isnan(D)) = isnan_value;
+
 switch connType
-    case 'eps-neighbor'
-        if isfield(options,'epsilon')
-            D = GramMatrix(f, gram_options, x_pos, x_pos);
-            W = D < options.epsilon;
-        else
-            error('Epsilon not deifned');
-        end
-    case 'n-neighbors'
-        if isfield(options,'num_nb')
-            D = GramMatrix(f, gram_options, x_pos, x_pos);
-            W = zeros(m);
-            for i = 1:m
-               [~,index] = sort(D(i,:),'ascend');
-               W(i,index(1:options.num_nb)) = true;
-            end
-        else
-            error('Neighboors number not defined.');
-        end
+    case 'epsilon' 
+        W = D < eps;
+        
+    case 'threshold'
+        W = D > thr;
+        
+    case 'n-nearest'
+        [~,index] = sort(D, 2, 'ascend');
+        W = zeros(size(D));
+        idx = sub2ind(size(W), ...
+                      repmat((1:size(W,1))',1,n_nearest), ...
+                      index(:,1:n_nearest));
+        W(idx) = true;
+        
     otherwise
         error('Error');
 end
 
 if plot_graph
-    GraphDraw(x_pos, W);
+    GraphDraw(nodes, W);
+end
+
+if plot_matrix
+    switch matrix_type
+        case 'sgn_mat'
+            GraphMatrix(W);
+            
+        case 'real_mat'
+            GraphMatrix(D);
+    end
 end
 
 end
+
 

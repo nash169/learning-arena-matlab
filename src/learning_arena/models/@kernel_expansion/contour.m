@@ -21,7 +21,7 @@ switch obj.d_
        error('It does not make sense contour for 1D');
    case 2
       contourf(obj.grid_{1}, obj.grid_{2}, ...
-          reshape(psi,size(obj.grid_{1},1),size(obj.grid_{1},2)));
+          reshape(psi,size(obj.grid_{1},1),size(obj.grid_{1},2)), 20);
       hold on;
       axis equal;
 
@@ -31,6 +31,7 @@ switch obj.d_
               reshape(dpsi(:,1),size(obj.grid_{1},1),size(obj.grid_{1},2)), ...
               reshape(dpsi(:,2),size(obj.grid_{1},1),size(obj.grid_{1},2)));
           set(h,'Color','r');
+          colorbar
       end
 
       if obj.fig_options_.plot_data

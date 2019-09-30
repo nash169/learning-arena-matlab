@@ -9,6 +9,10 @@ kpar.sigma = 5.;
 
 myrbf = rbf('sigma', 5.);
 
+% tic;
+% myrbf.set_data(a,a);
+% toc;
+
 tic;
 myrbf.kernel(a,a);
 toc;

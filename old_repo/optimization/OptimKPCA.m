@@ -1,20 +1,19 @@
-%% Training Dataset
 clear; close all; clc;
 
 %% Load demos
-load 2attracts_simple.mat;
+load 2as_3t.mat;
 demo = DataStruct.demo;
 demo_struct = DataStruct.demo_struct;
 
-%% Process & Draw demonstration's data
-process_options.center_data = false;
-process_options.tol_cutting = 1.;
-process_options.dt = 0.1;
-[X, targets] = ProcessDemos(demo, 2, demo_struct, process_options);
-
-draw_options.plot_pos = true;
-draw_options.plot_vel = true;
-[fig_pos, fig_vel] = DrawData(X, targets, draw_options);
+%% Process data
+preprocess_options = struct('center_data', false,...
+                            'calc_vel', true, ...
+                            'tol_cutting', 0.01, ...
+                            'smooth_window', 25 ...
+                            );
+[X, ~, ~, targets, ~] = ProcessDemos(demo, demo_struct, 2, preprocess_options);
+colors = hsv(length(unique(X(end,:))));
+colors = colors(X(end,:),:);
 
 %% Kernel PCA
 
@@ -27,7 +26,9 @@ kpca_data.kpar.sigma = 5;
 k_rbf = Kernels('gauss', kpca_data.kpar);
 
 % Calculate Gram matrix
-K = GramMatrix(kpca_data.xtrain, kpca_data.xtrain, k_rbf, true);
+gram_options = struct('norm', false,...
+                      'vv_rkhs', false);
+K = GramMatrix(k_rbf, gram_options, kpca_data.xtrain, kpca_data.xtrain);
 
 % Initial conditions
 alpha0 = rand(size(kpca_data.xtrain,1),1);
@@ -36,10 +37,10 @@ alpha0 = rand(size(kpca_data.xtrain,1),1);
 f = OptimObjectives('kpca', K);
 
 % Eigenvectors constraint for kPCA Optimization problem 1
-c1 = OptimConstraints('K-norm1', K);
+c1 = OptimConstraints('l2Ball');
 
 % Eigenvectors constraint for kPCA Optimization problem 2 (Classical kPCA)
-c2 = OptimConstraints('norm1');
+c2 = OptimConstraints('l1Ball');
 
 % Optimization options
 options_optim = optimoptions('fmincon','SpecifyObjectiveGradient',true,'MaxFunctionEvaluations',1e6);

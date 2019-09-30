@@ -11,4 +11,3 @@ V = repelem(a, 1, d).*repmat(b,1,d);
 
 A = c_reshape(V, m*d, d);
 end
-

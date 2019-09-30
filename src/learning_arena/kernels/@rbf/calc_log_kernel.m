@@ -4,7 +4,6 @@ switch obj.type_cov_
     case 1
         if obj.debug; disp('Kernel - Cov 1'); end
         log_k = -sum(obj.diff_.^2.*obj.sigma_inv_,2)/2;
-%         log_k = -vecnorm(obj.diff_,2,2).^2*obj.sigma_inv_/2;
     case 2
         if obj.is_sigma_inv_
             if obj.debug; disp('Kernel - Cov 2 - Inv'); end

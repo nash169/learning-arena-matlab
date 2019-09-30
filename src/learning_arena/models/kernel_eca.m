@@ -1,6 +1,8 @@
 classdef kernel_eca < manifold_learning
     %KERNEL_ECA Summary of this class goes here
     %   Detailed explanation goes here
+    
+%=== PUBLIC ===%
     methods
         function obj = kernel_eca(varargin)
             %KERNEL_ECA Construct an instance of this class
@@ -12,6 +14,20 @@ classdef kernel_eca < manifold_learning
             end
             obj.with_graph_ = false;
         end
+        
+        function S = entropy(obj)
+            if ~obj.is_eigen_
+                obj.eigensolve;
+            end
+            
+            S = obj.entropy_;
+        end
+        
+    end
+    
+%=== PROTECTED ===%
+    properties (Access = protected)
+        entropy_
     end
     
     methods (Access = protected)
@@ -23,7 +39,7 @@ classdef kernel_eca < manifold_learning
         function [V,D,W] = solve(obj)
             S = obj.similarity/obj.m_;
             [V,D,W] = eig(S);
-            [~, b] = sort(sum(V*sqrt(D)).^2, 'descend');
+            [obj.entropy_, b] = sort(sum(V*sqrt(D)).^2, 'descend');
             D = D(b,b);
             V = V(:,b);
             W = W(:,b);

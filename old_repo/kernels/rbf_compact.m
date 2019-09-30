@@ -10,14 +10,14 @@ elseif ~isfield(param,'r')
     error('Define r');
 end
         
-[k,~,~] = rbf(param);
+[k,~,~] = rbf_old(param);
 f = @(x,y)...
     (vecnorm(repmat(x,size(y,1),1)-repelem(y,size(x,1),1),2,2) <= param.r)...
     .*k(x,y);
         
 % Gradient
 if nargout > 1
-    [~,dk,~] = rbf(param);
+    [~,dk,~] = rbf_old(param);
     df = @(x,y)...
          (vecnorm(repmat(x,size(y,1),1)-repelem(y,size(x,1),1),2,2) <= param.r)...
          .*dk(x,y);    
@@ -25,7 +25,7 @@ end
 
 % Hessian
 if nargout > 2
-    [~,~,d2k] = rbf(param);
+    [~,~,d2k] = rbf_old(param);
     d2f = @(x,y)...
           (vecnorm(repmat(x,size(y,1),1)-repelem(y,size(x,1),1),2,2) <= param.r)...
           .*d2k(x,y);

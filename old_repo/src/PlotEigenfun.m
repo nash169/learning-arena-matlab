@@ -199,13 +199,14 @@ for i=1:alpha_dim
     end
     
     if plot_stream
-        streamslice(Xs, Ys, -real(Psi_d{1}(:, :, i)), -real(Psi_d{2}(:, :, i))); % check also streamline
+        h = streamslice(Xs, Ys, -real(Psi_d{1}(:, :, i)), -real(Psi_d{2}(:, :, i))); % check also streamline
+        set(h,'Color','r');
     end
 
     title(['Eig-val ' num2str(components(i)) ': ' num2str(eigens(i)) ],'FontSize',8);
     xlabel('x_1','FontSize',8);
     ylabel('x_2','FontSize',8);
-    colormap hot
+%     colormap hot
     axis square
     axis([xlims(1) xlims(2) ylims(1) ylims(2)])
     colorbar

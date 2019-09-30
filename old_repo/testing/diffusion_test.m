@@ -77,19 +77,19 @@ graph_options = struct('conntype','threshold', ... % epsilon - threshold - n-nea
                        'plot_matrix', false, ...
                        'matrix_type', 'sgn_mat' ... % sgn_mat - real_mat
                        );
-[W1, D1] = GraphBuild2(graph_options, x_i, x_i);
+[W1, D1] = GraphBuild(graph_options, x_i, x_i);
 
 % Build directionality check graph matrix
 graph_options.thr = 0.8;
 graph_options.isnan_value = 1;
 graph_options.kernel = Kernels('cosine_cross');
-W2 = GraphBuild2(graph_options, x_i, x_i, v_i);
+W2 = GraphBuild(graph_options, x_i, x_i, v_i);
 
 % Build continuity check graph matrix
 graph_options.thr = 0.9;
 graph_options.isnan_value = 1;
 graph_options.kernel = Kernels('cosine');
-[W3, D3] = GraphBuild2(graph_options, v_i, v_i);
+[W3, D3] = GraphBuild(graph_options, v_i, v_i);
 
 W = W1.*W3;
 % GraphDraw(x_i, W);

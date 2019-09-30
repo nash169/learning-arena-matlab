@@ -8,8 +8,8 @@ options_optim = optimoptions('fmincon',...
                              'SpecifyConstraintGradient',true);
                          
 x0 = rand(2,1);
-[sol,~,~,~,lambda] = fmincon(@(x) Objective(x, f),x0,[],[],[],[],[],[],...
-                                    @(x) Constraint(x, c1, c2), options_optim);
+[sol,~,~,~,lambda] = fmincon(@(x) combine_objectives(x, f),x0,[],[],[],[],[],[],...
+                                    @(x) combine_constraints(x, c1, c2), options_optim);
 
 end
 
