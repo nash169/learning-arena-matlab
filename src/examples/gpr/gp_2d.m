@@ -26,7 +26,7 @@ mygp = gaussian_process('kernel', myrbf, 'target', Z_noisy(:), 'reference', [X_s
 mygp.set_data(201, -10, 10, -10, 10);
 
 tic;
-x = mygp.optimize('sigma', 'sigma_f', 'sigma_n');
+x = mygp.optimize({'sigma', 'sigma_f', 'sigma_n'});
 toc;
 
 mygp.plot;
@@ -45,7 +45,6 @@ surf(X, Y, reshape(zpred,201,[]));
 
 % data = [X_sampled(:),Y_sampled(:),Z_noisy(:)];
 % save('data2d_gp.dat', 'data', '-ascii')
-
 % save('X_sampled.dat', 'X_sampled', '-ascii')
 % save('Y_sampled.dat', 'Y_sampled', '-ascii')
 % save('Z_noisy.dat', 'Z_noisy', '-ascii')

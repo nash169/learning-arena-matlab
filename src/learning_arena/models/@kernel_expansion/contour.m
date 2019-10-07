@@ -53,5 +53,6 @@ switch obj.d_
                 40, obj.fig_options_.colors, 'filled','MarkerEdgeColor',[0 0 0])
        end
 end
-axis([obj.fig_options_.grid{:}]) 
+
+if isfield(obj.fig_options_, 'grid'); axis([obj.fig_options_.grid{:}]); end
 end

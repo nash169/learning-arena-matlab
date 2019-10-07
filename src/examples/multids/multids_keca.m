@@ -27,7 +27,7 @@ ke.set_data(data);
 ke.set_colors(colors);
 
 % Set graph options
-ke.graph_options('type', 'k-nearest', 'k', 10);
+% ke.graph_options('type', 'k-nearest', 'k', 10);
 
 % Solve the eigendecomposition
 [D_ke,V_ke,W_ke] = ke.eigensolve;
@@ -45,7 +45,10 @@ ke.plot_entropy;
 ke.plot_spectrum;
 
 % Plot graph
-ke.plot_graph
+% ke.plot_graph
 
 % Plot data
 ke.plot_data;
+
+% Plot gramian
+ke.plot_similarity;

@@ -29,7 +29,7 @@ mygp.likelihood
 mygp.likelihood_grad('sigma', 'sigma_f', 'sigma_n')
 
 tic;
-x = mygp.optimize('sigma', 'sigma_f', 'sigma_n');
+x = mygp.optimize({'sigma', 'sigma_f', 'sigma_n'});
 toc;
 mygp.plot(options, h, 'g');
 

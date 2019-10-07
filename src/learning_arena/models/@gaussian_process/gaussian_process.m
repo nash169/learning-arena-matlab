@@ -14,7 +14,7 @@ classdef gaussian_process < kernel_expansion
         
         x = optimize(obj, varargin)
         
-        [f,g] = functional(obj, x, varargin)
+        [f,g] = max_likelihood(obj, x, varargin)
         
         ll = likelihood(obj)
         
