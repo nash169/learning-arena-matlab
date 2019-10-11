@@ -1,6 +1,11 @@
 function input(obj)
+% Check parameters
+obj.check;
+
+% Check test set
 assert(obj.is_data_, "Test set not present");
 
+% Set the ordering of input
 if ~obj.is_input_
     switch obj.params_.order
         case 'ref-test'
@@ -16,6 +21,7 @@ if ~obj.is_input_
     obj.is_input_ = true;
 end
 
+% Set the kernel input
 if ~obj.is_kernel_input_
     obj.h_params_.kernel.set_data(obj.input_{:});
     obj.is_kernel_input_ = false;

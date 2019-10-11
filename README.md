@@ -7,9 +7,10 @@ This repository contains various machine learning algorithms I'm using along my 
 - Various kernels
 - Gaussian mixture (seds as example)
 - Support vector
-- Dynamics generator
-- Manifold generator
+- Dynamics generator (dynamic and kinetic model)
+- Manifold generator (fixed colors also in manifold learning)
 - K-means
+- Added mean function to GP
 
 ## Under testing
 - User defined objective (constranint) for GP optimization

@@ -1,7 +1,5 @@
 function [params, params_aux] = params(obj, parameter)
 % Get the parameters of the kernel.
-assert(logical(sum(strcmp(obj.h_params_list_, parameter))), ...
-    '"%s" parameter not present', parameter)
 if nargin < 2 
     params = obj.h_params_;
     if nargout > 1; params_aux = obj.params_; end

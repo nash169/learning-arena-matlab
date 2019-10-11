@@ -56,11 +56,11 @@ K=[a c d f e d 0 0 0 0 0 0
    0 0 0 0 0 0 e f c c a c
    0 0 0 0 0 0 d c a d c a]
 
-%% Note: there exist always two columns of K that contain the cyclic patterns for each DS,
+%% Note: there exist always two columns of K that contain the repetition of the DS through each trajectory,
 %%        and hence the two eigenvectors of K will entail the attractors and linear dynamics for each DS
 
 
-[V,D]=eig(K)
+[V,D]=eigs(K)
 
 % L=K-sum(K)
 % 

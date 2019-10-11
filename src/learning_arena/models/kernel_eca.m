@@ -46,7 +46,7 @@ classdef kernel_eca < manifold_learning
         end
         
         function [V,D,W] = solve(obj)
-            S = obj.similarity/obj.m_;
+            S = full(obj.similarity/obj.m_); % Think about eigs for asym sparse matrix
             [V,D,W] = eig(S);
             [obj.entropy_, b] = sort(sum(V*sqrt(D)).^2, 'descend');
             D = D(b,b);

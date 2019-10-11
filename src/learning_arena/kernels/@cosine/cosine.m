@@ -10,6 +10,7 @@ classdef cosine < abstract_kernel
             obj = obj@abstract_kernel(varargin{:});
 
             if ~isfield(obj.h_params_, 'scale'); obj.h_params_.scale = 1; end
+            if ~isfield(obj.params_, 'isnan'); obj.params_.isnan = 1; end
         end
     end
   
@@ -18,6 +19,7 @@ classdef cosine < abstract_kernel
         function signature(obj)
             obj.type_ = {'scalar_valued'};
             obj.h_params_list_ = ['scale', obj.h_params_list_];
+            obj.params_list_ = ['isnan', obj.params_list_];
         end
         
         function d = num_params(obj, name)
@@ -36,7 +38,7 @@ classdef cosine < abstract_kernel
 
         function k = calc_kernel(obj)
             k = sum(obj.Data_{1}.*obj.Data_{2},2)./vecnorm(obj.Data_{1},2,2)./vecnorm(obj.Data_{2},2,2);
-            k(isnan(k)) = 0;
+            k(isnan(k)) = obj.params_.isnan;
         end
 
         function dk = calc_gradient(obj, var)

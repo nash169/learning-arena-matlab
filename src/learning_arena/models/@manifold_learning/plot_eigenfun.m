@@ -18,8 +18,10 @@ for i = 1 : length(space)
     subplot(1,2,1)
     obj.expansion_.plot(options, varargout{i});
     title(['Eigenfunction ', num2str(space(i)), ' surface'])
+    axis square
     subplot(1,2,2)
     obj.expansion_.contour(options, varargout{i});
     title(['Eigenfunction ', num2str(space(i)), ' contour'])
+    axis square
 end
 end

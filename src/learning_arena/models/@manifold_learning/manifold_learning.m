@@ -15,6 +15,8 @@ classdef manifold_learning < handle
             %   Detailed explanation goes here
             obj.signature;
             if nargin > 0; obj.set_params(varargin{:}); end
+            
+            obj.is_graph_ = false;
             obj.reset;
         end
         

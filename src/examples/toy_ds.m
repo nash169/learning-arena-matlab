@@ -53,27 +53,27 @@ le.plot_spectrum(1:num_points);
 le.plot_embedding([2,3]);
 
 %% Gaussian Process
-% Create targets set
-x_a = ([V(3,2), V(3,3)] + [V(6,2), V(6,3)] + [V(9,2), V(9,3)])/3;
-y = vecnorm(x-x_a, 2, 2);
-
-% Reset kernel parameters
-myrbf.set_params('sigma_n', 0.2, 'sigma_f', 1);
-
-% Create GP
-mygp = gaussian_process('kernel', myrbf, 'targets', y);
-mygp.set_data(x);
-
-% Plot GP
-mygp.set_grid(100, 0, 100, 0, 100);
-ops_exps = struct( ...
-    'grid', [0 100; 0 100], ...
-    'res', 100, ...
-    'plot_data', true, ...
-    'plot_stream', true ...
-    );
-mygp.plot;
-g = mygp.contour(ops_exps);
+% % Create targets set
+% x_a = ([V(3,2), V(3,3)] + [V(6,2), V(6,3)] + [V(9,2), V(9,3)])/3;
+% y = vecnorm(x-x_a, 2, 2);
+% 
+% % Reset kernel parameters
+% myrbf.set_params('sigma_n', 0.2, 'sigma_f', 1);
+% 
+% % Create GP
+% mygp = gaussian_process('kernel', myrbf, 'targets', y);
+% mygp.set_data(x);
+% 
+% % Plot GP
+% mygp.set_grid(100, 0, 100, 0, 100);
+% ops_exps = struct( ...
+%     'grid', [0 100; 0 100], ...
+%     'res', 100, ...
+%     'plot_data', true, ...
+%     'plot_stream', true ...
+%     );
+% mygp.plot;
+% g = mygp.contour(ops_exps);
 
 % Number visualization (to implement in manifold_learning class). Also add
 % the possibility of plotting dataset in kernel_expansion class

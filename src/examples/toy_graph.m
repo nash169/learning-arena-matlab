@@ -32,7 +32,7 @@ myrbf = rbf;
 myrbf.set_params('sigma', length);
 K = myrbf.gramian(x,x);
 
-Plot gramian
+%Plot gramian
 myrbf.plot_gramian;
 
 %% Laplacian Eigenmaps

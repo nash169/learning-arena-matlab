@@ -5,9 +5,6 @@ if nargin < 2
     if nargout > 1; params_aux = obj.params_; end
 else
     assert(nargout < 2, 'Just one output allowed')
-    
-    assert(logical(sum(strcmp(obj.h_params_list_, parameter))), ...
-    '"%s" parameter not present', parameter)
 
     if logical(sum(strcmp(obj.h_params_list_, parameter)))
         params = obj.h_params_.(parameter);

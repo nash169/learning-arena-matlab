@@ -16,13 +16,14 @@ switch params.type
         if isfield(params, 'fun')
             norm_sq = params.fun(data,data);
         else
-            norm_sq = sum((repmat(data, m, 1) - repelem(data, m, 1)).^2,2);
+%             norm_sq = sum((repmat(data, m, 1) - repelem(data, m, 1)).^2,2);
+            norm_sq = vecnorm(repmat(data, m, 1) - repelem(data, m, 1),2,2); % less performance
         end
         
         if ~isfield(params, 'r'); params.r = mean(norm_sq); end
         
         G = reshape(norm_sq, m, m);
-        G = G < params.r;
+        G = G <= params.r;
         
     case 'k-nearest'
         if ~isfield(params, 'k'); params.k = ceil(0.25*m); end

@@ -1,6 +1,5 @@
 function psi = expansion(obj, varargin)
 % Get the kernel expansion.
-obj.check;
 if nargin > 1; obj.set_data(varargin{:}); end
 obj.input;
 
