@@ -1,6 +1,6 @@
 function fig = contour(obj, options, fig)
 % Contour plot of the kernel expansion.
-if nargin < 3; fig = figure; else; figure(fig); end
+if nargin < 3; fig = figure; else; figure(fig); hold on; end
 if nargin < 2; options = struct; end
 obj.check;
 

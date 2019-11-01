@@ -25,7 +25,7 @@ sigma = scale*(max_d/3);
 G1 = graph_build(position, 'type', 'eps-neighborhoods', 'r', 3*sigma);
 
 % For the second graph it is necessary to use epsilon neighborhoods with
-% non-euclidean distance (lyapunov kernel)
+% non-euclidean distance (lyapunov kernel - with symmetric part set to zero)
 mylyap = lyapunov('kernel', rbf('sigma', 5.), 'v_field', velocity, 'sym_weight', 0, 'isnan', 1, 'normalize', true);
 G2 = graph_build(position, 'type', 'eps-neighborhoods', 'r', -0.8, 'fun', @(x,y) -mylyap.kernel(x,y));
 

@@ -2,8 +2,6 @@ clear; close all; clc;
 
 %% Load demos
 load 2as_3t.mat;
-demo = DataStruct.demo;
-demo_struct = DataStruct.demo_struct;
 
 %% Process data
 preprocess_options = struct('center_data', false,...
@@ -18,7 +16,7 @@ colors = colors(X(end,:),:);
 
 %% Manifold Learning
 % Create object
-kp = kernel_pca;
+kp = kernel_pca('centering', false);
 % Set the dataset
 kp.set_data(data);
 % Set colors

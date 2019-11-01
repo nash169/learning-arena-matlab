@@ -8,7 +8,7 @@ classdef pendulum < abstract_dynamics
             %PENDULUM Construct an instance of this class
             %   Detailed explanation goes here           
             obj = obj@abstract_dynamics(varargin{:});
-            
+            if ~isfield(obj.params_, 'friction'); obj.params_.space = 0; end
         end
     end
     

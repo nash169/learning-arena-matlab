@@ -1,7 +1,7 @@
 clear; close all; clc;
 
 %% Load demos
-load 2as_3t.mat;
+load pendulum.mat;
 
 %% Process data
 dim = 2;
@@ -35,6 +35,7 @@ scale = 1.5;
 sigma = scale*(max_d/3);
 
 %% Build Graph
+
 % The first graph can be rebuild using epsilon neighborhoods
 G1 = graph_build(position, 'type', 'eps-neighborhoods', 'r', 3*sigma);
 
@@ -62,15 +63,34 @@ ke.set_colors(colors);
 ke.set_graph(G1.*G2.*G3); % ke.graph_options('type', 'eps-neighborhoods', 'r', 3*sigma); (G2+G2')
 % Solve the eigendecomposition
 [D_ke,V_ke,W_ke] = ke.eigensolve;
-% Plot the eigenfunctions
-ke.plot_eigenfun([1,2], 'plot_stream', true, 'grid', [-2*pi, 4*pi, -2, 2], 'plot_data', true, 'colors', colors);
-% Plot eigenvec
-ke.plot_eigenvec;
-% Plot entropy
-ke.plot_entropy;
-% Plot spectrum
-ke.plot_spectrum;
-% Plot graph
-ke.plot_graph;
-% Plot data
-ke.plot_data;
+
+% % Plot the eigenfunctions
+% ke.plot_eigenfun([1,2], 'plot_stream', true, 'grid', [-2*pi, 4*pi, -2, 2], 'plot_data', true, 'colors', colors);
+% % Plot eigenvec
+% ke.plot_eigenvec;
+% % Plot entropy
+% ke.plot_entropy;
+% % Plot spectrum
+% ke.plot_spectrum;
+% % Plot graph
+% ke.plot_graph;
+% % Plot data
+% h = ke.plot_data;
+
+%% Velocity-oriented kernel
+myrbfvel = velocity_oriented('v_field', velocity(1,:), 'weights', [sigma^2,0.1*sigma^2]);
+
+% Options of the expansion plot
+ops_exps = struct( ...
+    'grid', [-2*pi, 4*pi, -2, 2], ...
+    'res', 100, ...
+    'plot_data', false, ...
+    'plot_stream', true ...
+    );
+psi = kernel_expansion('reference', position(1,:), 'weights', 1);
+psi.set_data(100, -2*pi, 4*pi, -2, 2);
+psi.set_params('kernel', myrbfvel);
+
+% psi.plot;
+h = psi.contour(ops_exps);
+scatter(position(:,1), position(:,2), 40, colors, 'filled','MarkerEdgeColor',[0 0 0])

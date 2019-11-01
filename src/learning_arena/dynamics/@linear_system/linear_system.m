@@ -8,7 +8,8 @@ classdef linear_system < abstract_dynamics
             %LINEAR_SYSTEM Construct an instance of this class
             %   Detailed explanation goes here           
             obj = obj@abstract_dynamics(varargin{:});
-            if ~isfield(obj.params_, 'friction'); obj.params_.space = 0; end
+            if ~isfield(obj.params_, 'attractor'); obj.params_.attractor = 0; end
+            if ~isfield(obj.params_, 'constant'); obj.params_.constant = 0; end
         end
     end
     

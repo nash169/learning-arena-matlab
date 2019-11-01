@@ -1,4 +1,4 @@
-function [sol, lambda] = example()
+function [sol, lambda] = basic_optim()
 f = @(x) obj(x);
 c1 = @(x) cstr1(x);
 c2 = @(x) cstr2(x);

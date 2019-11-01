@@ -1,10 +1,10 @@
-classdef sphere < abstract_manifold
+classdef nsphere < abstract_manifold
     %SPHERE Summary of this class goes here
     %   Detailed explanation goes here
 
 %=== PUBLIC ===%     
     methods
-        function obj = sphere(varargin)
+        function obj = nsphere(varargin)
             %SPHERE Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@abstract_manifold(varargin{:});

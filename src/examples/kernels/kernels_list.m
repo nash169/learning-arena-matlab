@@ -4,7 +4,7 @@ clear; close all; clc;
 res = 200;
 x_train = [25., 50.; 50, 50; 75, 50];
 v_field = [10,10; 0, 10; 10, 0];
-weights = [0; 1; 0];
+weights = [1; 0; 1];
 
 % Kernels' parameters
 U = gs_orthogonalize([1,1]);
@@ -35,7 +35,7 @@ psi.set_data(res, 0, 100, 0, 100);
 
 %% RBF isotropic
 myrbf = rbf;
-myrbf.set_params('sigma', sigma_iso, 'sigma_f', 1., 'sigma_n', 0.); % , 'sigma_inv', sigma_full, 'compact', 0.05
+myrbf.set_params('sigma', sigma_diagd, 'sigma_f', 1., 'sigma_n', 0.); % , 'sigma_inv', sigma_full, 'compact', 0.05
 psi.set_params('kernel', myrbf);
 psi.plot;
 psi.contour(ops_exps);
