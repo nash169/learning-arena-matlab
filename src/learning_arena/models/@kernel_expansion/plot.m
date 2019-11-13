@@ -12,8 +12,10 @@ psi = obj.expansion;
 switch obj.d_
    case 1
        plot(obj.grid_{1}, psi, varargin{:});
-   otherwise
-       surf(obj.grid_{1}, obj.grid_{2}, ...
-           reshape(psi,size(obj.grid_{1},1),size(obj.grid_{1},2)))
+    otherwise
+       dim = num2cell(size(obj.grid_{1}));
+       Psi = reshape(psi,dim{:});
+       surf(obj.grid_{1}(:,:,1), obj.grid_{2}(:,:,1), ...
+           Psi(:,:,1))
 end
 end

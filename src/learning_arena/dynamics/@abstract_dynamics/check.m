@@ -1,7 +1,5 @@
 function check(obj)
-% Check data and parameters.
-assert(obj.is_data_, "Dataset not present");
-
+% Check parameters.
 if ~obj.is_params_
     for i  = 1 : length(obj.params_list_)
        assert(isfield(obj.params_,obj.params_list_{i}), ...

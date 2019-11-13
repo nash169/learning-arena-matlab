@@ -34,7 +34,7 @@ switch params.type
         end
         
         [mIdx,~] = knnsearch(data, data, 'K', params.k, 'Distance', dist);
-        G = digraph(repelem(mIdx(:,1), params.k, 1),c_reshape(mIdx, [], 1));
+        G = digraph(repelem((1:m)', params.k, 1),c_reshape(mIdx, [], 1));
         G = adjacency(G);     
         
     otherwise

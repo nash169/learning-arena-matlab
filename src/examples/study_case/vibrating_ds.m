@@ -1,23 +1,32 @@
 clear; close all; clc;
 
-m = 1; k = 1; r = 2;
+%% Second order dynamics
+theta = 1; phi = 0.5;
 
-omega_0 = sqrt(k/m);
-r_c = 2*sqrt(m*k);
-csi = r/r_c;
+omega_0 = sqrt(theta);
+phi_c = 2*sqrt(theta);
+csi = phi/phi_c;
 
+A = [0 1; 
+    -theta -phi];
+x_a = [0, 0];
+
+myds = linear_system('a_matrix', A, 'attractor', x_a);
+
+%% Analysis of the eigen-values
 lambda_1 = (-csi + 1i*sqrt(1-csi^2))*omega_0;
 lambda_2 = (-csi - 1i*sqrt(1-csi^2))*omega_0;
 
-A = [0 1; -k/m -r/m];
-x_a = [50, 50];
 [V, D] = eig(A);
 
-B = [-2 0; 0, -1];
-v1 = [1,1]';
-v2 = [-1,1]';
-U = [v1/norm(v1), v2/norm(v2)];
-B = U*B*inv(U);
+%% Sample DS
+x0 = [3,0]; % position, velocity of the ds
+T = 20;
+dt = 0.01;
+X = myds.sample(x0,T,dt);
 
-myds1 = linear_system('a_matrix', B, 'attractor', x_a);
-myds1.plot_field;
+%% Plot phase diagram
+myds.plot_field;
+
+%% Plot respone
+plot(0:dt:T, X(:,1))

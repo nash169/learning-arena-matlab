@@ -14,11 +14,17 @@ switch space_type
         error('Space not found')
 end
 
-G = digraph(obj.graph, 'omitselfloops');
-nodes = {'XData', data(:,1), 'YData', data(:,2)};
-if size(data,2) > 2; nodes = [nodes, 'ZData', data(:,3)]; end
-
 fig = figure;
-plot(G, nodes{:});
+
+% G = digraph(obj.graph, 'omitselfloops');
+% nodes = {'XData', data(:,1), 'YData', data(:,2)};
+% if size(data,2) > 2; nodes = [nodes, 'ZData', data(:,3)]; end
+% plot(G, nodes{:}, 'ShowArrows', 'off', 'ArrowPosition', 0.1);
+
+G = logical(obj.graph);
+diff = repmat(obj.data_,obj.m_,1) - repelem(obj.data_,obj.m_,1);
+nodes = repelem(obj.data_,obj.m_,1);
+quiver(nodes(G(:),1),nodes(G(:),2), diff(G(:),1), diff(G(:),2), 0)
+
 title(['Graph in ', space_type, ' space']);
 end
