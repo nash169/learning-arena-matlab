@@ -7,7 +7,7 @@ if obj.params_.sigma_inv
     elseif size(obj.params_.sigma_inv,1) == obj.m_*obj.n_*obj.d_
         obj.num_h_params_ = obj.m_*obj.n_*obj.d_^2;
     else
-        error("Can't set non mn-points depedente sparse covariance.")
+        error("Can't set non mn-points depedent sparse covariance.")
     end
 else
     obj.num_h_params_ = numel(obj.h_params_.sigma);

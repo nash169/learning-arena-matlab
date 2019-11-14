@@ -11,18 +11,25 @@ classdef polynomial < abstract_kernel
 
             if ~isfield(obj.h_params_, 'degree'); obj.h_params_.degree = 1; end
             if ~isfield(obj.h_params_, 'const'); obj.h_params_.const = 0; end
+            
+            obj.num_h_params_ = 1;
         end
     end
     
 %=== PROTECTED ===%
+    properties
+        num_h_params_
+    end
+    
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.h_params_list_ = ['degree', 'const', obj.h_params_list_];
+            obj.h_params_list_ = ['weight', 'degree', 'const', obj.h_params_list_];
         end
         
         function d = num_params(obj, name)
             d = length(name);
+            d = d - 1 + obj.num_h_params;
         end
         
         function counter = set_pvec(obj, name, vec, counter)
