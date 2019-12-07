@@ -36,6 +36,8 @@ classdef abstract_dynamics < handle
         
         data = data(obj)
         
+        grid = grid(obj)
+        
         X = vector_field(obj, data)
         
         S = sample(obj, num_traj, sampling_center, time_window)

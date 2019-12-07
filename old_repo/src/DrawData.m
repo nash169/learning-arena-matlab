@@ -27,7 +27,7 @@ if plot_pos
         for i = 1:m
             plot(targets(i,1), targets(i,2),'xk','markersize',30);
         end
-        quiver(data(1,:)',data(2,:)',data(3,:)',data(4,:)');
+%         quiver(data(1,:)',data(2,:)',data(3,:)',data(4,:)');
     else
         for i = 1:m
             plot3(targets(i,1), targets(i,2), targets(i,3), 'xk','markersize',30);

@@ -1,27 +1,79 @@
-classdef velocity_directed < rbf & cosine
+classdef velocity_directed < abstract_kernel
     %VELOCITY_DIRECTED Summary of this class goes here
     %   Detailed explanation goes here
     
 %=== PUBLIC ===%
-    properties
-        
-    end
-    
     methods
         function obj = velocity_directed(varargin)
             %VELOCITY_DIRECTED Construct an instance of this class
             %   Detailed explanation goes here
+            obj = obj@abstract_kernel(varargin{:});
             
+            if ~isfield(obj.h_params_, 'weight'); obj.h_params_.weight = .5; end
+            if ~isfield(obj.params_, 'isnan')
+                obj.params_.isnan = 1;
+                obj.cosine_.set_params('isnan', obj.params_.isnan);
+            end
+        end
+
+        function set_params(obj, varargin)
+            set_params@abstract_kernel(obj, varargin{:});
+            if logical(sum(strcmp(varargin, 'v_field')))
+                obj.cosine_.set_data(obj.h_params_.v_field{:});
+            end
+            
+            if logical(sum(strcmp(varargin, 'sigma')))
+                obj.rbf_.set_params('sigma', obj.h_params_.sigma);
+            end
+
+            if logical(sum(strcmp(varargin, 'isnan')))
+                obj.cosine_.set_params('isnan', obj.params_.isnan);
+            end
+        end
+
+        function set_data(obj, varargin)
+            set_data@abstract_kernel(obj, varargin{:});
+            obj.rbf_.set_data(obj.data_{:});
         end
     end
     
 %=== PROTECTED ===%
     properties (Access = protected)
-        
+        rbf_;
+        cosine_;
     end
     
     methods (Access = protected)
+        function signature(obj)
+            obj.type_ = {'scalar_valued'};
+            obj.h_params_list_ = ['sigma', 'v_field', 'weight', obj.h_params_list_];
+            obj.params_list_ = ['isnan', obj.params_list_];
+
+            obj.rbf_ = rbf;
+            obj.cosine_ = cosine;
+        end
         
+        function d = num_params(obj, name)
+        end
+        
+        function counter = set_pvec(obj, name, vec, counter)
+        end
+        
+        function [vec, counter] = pvec(obj, name, vec, counter)
+        end
+        
+        function k = calc_kernel(obj)
+            k = obj.h_params_.weight*obj.rbf_.kernel + (1-obj.h_params_.weight)*(1+obj.cosine_.kernel)*0.5;
+        end
+        
+        function dk = calc_gradient(obj)
+        end
+        
+        function d2k = calc_hessian(obj)
+        end
+        
+        function dp = calc_pgradient(obj, name)
+        end
     end
 end
 

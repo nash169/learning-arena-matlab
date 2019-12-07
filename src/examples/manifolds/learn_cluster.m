@@ -2,20 +2,35 @@
 clear; close all; clc;
 
 % Create cluster 1
-cluster1 = 35*rand(100,2);
+cluster1 = 25*rand(100,3);
 cluster1 = cluster1 - mean(cluster1);
 
 % Create cluster 2
-cluster2 = 35*rand(100,2);
+cluster2 = 25*rand(100,3);
 cluster2 = cluster2 - mean(cluster2);
 
+% Create cluster 3
+cluster3 = 25*rand(100,3);
+cluster3 = cluster3 - mean(cluster3);
+
+% Create cluster 4
+cluster4 = 25*rand(100,3);
+cluster4 = cluster4 - mean(cluster4);
+
+% Create dataset
+data = [cluster1 + [25,25,25]; cluster2 + [25,25,75]; cluster3 + [50,50,50]; cluster4 + [75,50,25]];
+
 % Place clusters
-data = [cluster1 + [25,50]; cluster2 + [75,50]];
-scatter(data(:,1), data(:,2), 'filled');
-axis([0 100 0 100]); grid on;
+% scatter(data(:,1), data(:,2), 'filled');
+% axis([0 100 0 100]); grid on;
 
 % Test set
-test = rand(1000,2);
+test = rand(1000,3);
+
+%% K-Means
+km = k_means('cluster', 4, 'step', 10, 'norm', 2, 'soft', true);
+km.set_data(data);
+[labels, centroids] = km.cluster;
 
 %% Kernel PCA
 % Create object

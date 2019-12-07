@@ -5,7 +5,7 @@ V_joints = [];
 X_obj = [];
 V_obj = [];
 
-dynamics = 2;
+dynamics = 3;
 trajs = 3;
 
 demo_joints = cell(dynamics,1);

@@ -115,6 +115,7 @@ else
             for i=1:size(colors,1)
                 idx   = labels == id_labels(i);
                 scatter(X(idx,1),X(idx,2),points_size(idx),'filled','MarkerFaceColor',colors(i,:),'MarkerEdgeColor', [0 0 0]);
+%                 scatter(X(idx,1),X(idx,2),points_size(idx),'filled','MarkerFaceColor',colors(i,:));
             end
         elseif ~isempty(colors)
             scatter(X(:,1),X(:,2),points_size,colors,'filled','MarkerEdgeColor', [0 0 0]);
@@ -133,10 +134,10 @@ else
             id_labels = unique(labels);
             for i=1:size(colors,1)
                 idx   = labels == id_labels(i);
-                scatter3(X(idx,1),X(idx,2),X(idx,3),points_size(idx),'filled','MarkerFaceColor',colors(i,:),'MarkerEdgeColor', [0 0 0]);
+                scatter3(X(idx,1),X(idx,2),X(idx,3),points_size(idx),'filled','MarkerFaceColor',colors(i,:)); %,'MarkerEdgeColor', [0 0 0]);
             end
         elseif ~isempty(cmap)
-           scatter3(X(:,1), X(:,2), X(:,3), points_size, cmap,'filled','MarkerEdgeColor', [0 0 0]);
+           scatter3(X(:,1), X(:,2), X(:,3), points_size, cmap,'filled'); %,'MarkerEdgeColor', [0 0 0]);
            colormap(jet)
            colorbar
         else

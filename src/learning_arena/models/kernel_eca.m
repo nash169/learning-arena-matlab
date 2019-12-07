@@ -29,14 +29,18 @@ classdef kernel_eca < manifold_learning
             S = obj.entropy;
             fig = figure;
             plot(num_eig, S(num_eig), '-o')
-            grid on
+            grid on; hold on;
             title(['Entropy contribution ', num2str(num_eig(1)), ' to ', num2str(num_eig(end))])
+            labels = cellstr(num2str(obj.order_));
+            dx = 0.1; dy = 0;
+            text(num_eig + dx, S(num_eig) + dy, labels(num_eig))
         end
     end
     
 %=== PROTECTED ===%
     properties (Access = protected)
         entropy_
+        order_
     end
     
     methods (Access = protected)
@@ -47,11 +51,16 @@ classdef kernel_eca < manifold_learning
         
         function [V,D,W] = solve(obj)
             S = full(obj.similarity/obj.m_); % Think about eigs for asym sparse matrix
-            [V,D,W] = eig(S);
-            [obj.entropy_, b] = sort(sum(V*sqrt(D)).^2, 'descend');
-            D = D(b,b);
-            V = V(:,b);
-            W = W(:,b);
+%             [V,D,W] = eig(S);
+%             [obj.entropy_, obj.order_] = sort(sum(V*sqrt(D)).^2, 'descend');
+%             D = D(obj.order_,obj.order_);
+%             V = V(:,obj.order_);
+%             W = W(:,obj.order_);
+            n = 10;
+            [V,D] = eigs(S, n, 'largestreal');
+            [obj.entropy_, obj.order_] = sort(diag(D).*sum(V)'.^2, 'descend');
+            V = V(:, obj.order_);
+            W = 0;
         end
     end
 end

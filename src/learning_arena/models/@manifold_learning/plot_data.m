@@ -16,7 +16,8 @@ if nargin < 4; fig = figure; else; figure(fig); hold on; end
 if obj.d_ == 2
     scatter(obj.data_(:,1), obj.data_(:,2), 40, obj.colors_, 'filled','MarkerEdgeColor',[0 0 0])
 else
-% %     scatter3(obj.data_(:,1), obj.data_(:,2), obj.data_(:,3), 40, obj.colors_, 'filled','MarkerEdgeColor',[0 0 0])
+%     scatter3(obj.data_(:,1), obj.data_(:,2), obj.data_(:,3), 40, 'r', 'filled','MarkerEdgeColor',[0 0 0])
+    scatter3(obj.data_(:,1), obj.data_(:,2), obj.data_(:,3), 40, obj.colors_, 'filled','MarkerEdgeColor',[0 0 0])
 %     scatter3(obj.data_(:,1), obj.data_(:,2), obj.data_(:,3), 40, obj.colors_, 'filled')
 end
 title("Original space dataset")

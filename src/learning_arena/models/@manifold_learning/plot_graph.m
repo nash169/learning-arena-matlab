@@ -24,7 +24,12 @@ fig = figure;
 G = logical(obj.graph);
 diff = repmat(obj.data_,obj.m_,1) - repelem(obj.data_,obj.m_,1);
 nodes = repelem(obj.data_,obj.m_,1);
-quiver(nodes(G(:),1),nodes(G(:),2), diff(G(:),1), diff(G(:),2), 0)
+
+if obj.d_ == 2
+    quiver(nodes(G(:),1),nodes(G(:),2), diff(G(:),1), diff(G(:),2), 0)
+else
+    quiver3(nodes(G(:),1),nodes(G(:),2), nodes(G(:),3), diff(G(:),1), diff(G(:),2), diff(G(:),3), 0)
+end
 
 title(['Graph in ', space_type, ' space']);
 end
