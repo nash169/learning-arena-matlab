@@ -105,7 +105,7 @@ T_joints(:,10:12) = []; T_joints(:,1:6) = [];
 
 % Joints dimension
 red_start = 1;
-red_end = 5;
+red_end = 10;
 x_joints = x_joints(:,red_start:red_end);
 v_joints = v_joints(:,red_start:red_end);
 T_joints = T_joints(:,red_start:red_end);
@@ -161,12 +161,14 @@ ke.plot_eigenvec([1,2,3]);
 % h = ke.plot_data;
 
 %% Clustering
+state_dim = 10;
+num_ds = 3;
 thr = 3e-16;
 U = ke.embedding([2,1,3]);
 
 % Cluster
 labels_learn = 4*ones(length(l_joints),1);
-for i = 1:3
+for i = 1:num_ds
     labels_learn(abs(U(:,i))>thr) = i;
 end
 
@@ -174,7 +176,7 @@ end
 correct_class = sum(labels_learn==l_joints)*100/M;
 class_start = 1;
 class_end = sum(l_joints(l_joints==1));
-per_class = zeros(3,3);
+per_class = zeros(num_ds,3);
 for i = 1 : 3
     batch = labels_learn(class_start:class_end);
     correct = sum(batch==i);
@@ -192,9 +194,9 @@ for i = 1 : 3
 end
 
 %% Attractor
-x_attractor = zeros(3,5);
+x_attractor = zeros(num_ds,state_dim);
 n = 10;
-for i = 1:3
+for i = 1:num_ds
     [~, index] = sort(abs(U(:,i)),'descend');
     x_attractor(i,:) = mean(x_joints(index(1:n), :));
 end
