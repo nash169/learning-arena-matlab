@@ -193,12 +193,16 @@ for i=1:length(demos)
         tmp(pos_index,:) = tmp(pos_index,:) - repmat(xT(1:dim,end),1,size(tmp,2));
     end
     
+    % Init cut
+    cut_init = 5;
+    tmp = tmp(:, cut_init:end);
+    
     % Store Positions
     demo_data = [demo_data; tmp(pos_index,:)];
     
     % Store Velocities
     if calc_vel
-         demo_data = [demo_data; pos_d];
+         demo_data = [demo_data; pos_d(:,cut_init:end)];
     elseif vel_index
          demo_data = [demo_data; tmp(vel_index,:)];
     end

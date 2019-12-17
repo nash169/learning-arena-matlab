@@ -9,4 +9,4 @@ gen_options = struct('limits', [0 100 0 100],...
 [demo, demo_struct] = GenerateDemos(gen_options);
 close;
 
-save('demos/ds_demo.mat', 'demo', 'demo_struct');
+save('data/demos/drawn_demo.mat', 'demo', 'demo_struct');
