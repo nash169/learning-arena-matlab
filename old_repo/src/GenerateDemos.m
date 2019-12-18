@@ -145,6 +145,8 @@ for dem = start_dem:n_demonstrations
     demo{dem} = data;
 end
 
+demo = demo(start_dem:end);
+
 return
 
 %% Functions for data capture
