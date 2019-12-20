@@ -16,7 +16,7 @@
 clear; close all; clc;
 
 %% Load demos
-ds = load('2as_3t.mat');
+load '2as_3t.mat';
 ds_dim = 2;
 % demo = ReducedData(demo, 10); %25
 
@@ -26,7 +26,7 @@ preprocess_options = struct('center_data', false,...
                             'tol_cutting', 0.01, ...
                             'smooth_window', 25 ...
                             );
-[X, ~, ~, targets, ~] = ProcessDemos(ds.DataStruct.demo, ds.DataStruct.demo_struct, ds_dim, preprocess_options);
+[X, ~, ~, targets, ~] = ProcessDemos(demo, demo_struct, ds_dim, preprocess_options);
 
 x_i = X(1:ds_dim, :)';
 v_i = X(ds_dim+1:2*ds_dim, :)';
@@ -91,13 +91,14 @@ graph_options.isnan_value = 1;
 graph_options.kernel = Kernels('cosine');
 [W3, D3] = GraphBuild(graph_options, v_i, v_i);
 
-W = W1.*W3;
+% W = W1.*W3;
+W = W1;
 % GraphDraw(x_i, W);
 
 %% Building Gram Matrix
 t = 32; % Time for the heat kernel.
 
-kpar_mat = struct('sigma', sqrt(t/2), ...
+kpar_mat = struct('sigma', 0.5, ... % sqrt(t/2)
                   'r', 30, ...
                   'rot', [0 1;-1 0], ...
                   'lambda', 50, ...
@@ -117,7 +118,8 @@ K = GramMatrix(rbf, gram_options, x_i, x_i);
 alpha = 1;
 
 % Affinity matrix - Apply Graph to Gram matrix
-S = K.*W;
+% S = K.*W;
+S = K;
 
 % Remove diagonal
 % S = S.*~eye(size(S));
@@ -158,8 +160,8 @@ M = D\S;
 num_eigen = 15;
 % [alpha, lambda] = eigs(L,num_eigen+1,'smallestabs');
 
-[eigvect_r, lambda, eigvect_l] = eig(L_alpha);
-[eig_sort, eig_index] = sort(diag(lambda),'ascend');
+[eigvect_r, lambda, eigvect_l] = eig(M);
+[eig_sort, eig_index] = sort(diag(lambda),'descend');
 lambda = diag(eig_sort);
 eigvect_r = eigvect_r(:,eig_index);
 eigvect_l = eigvect_l(:,eig_index);
@@ -172,38 +174,42 @@ eigenData = struct('xtrain', x_i, ...
                     'kernel', rbf, ...
                     'kernel_dev', drbf ...
                    );
+
+l = diag(lambda);
+figure
+plot(1:10, l(1:10), '-o');
                
 %% Plot Eigenfucntions
-plot_options = struct('xlims', [0 100],...        % 1x2 vector  
-                      'ylims', [0 100],...        % 1x2 vector
-                      'resoultion', 'medium',...  % ['low','medium','high']
-                      'type', '2D',...            % ['2D','3D']
-                      'components', 1:8,...       % 1xn vector or scalar
-                      'plot_data', true,...       % [true,false]
-                      'labels', X(end,:),...      % 1xm vector 
-                      'plot_stream', false,...    % [true,false]
-                      'plot_eigens', false,...    % [true,false]
-                      'plot_mapped', false,...     % ['2D','3D',false]
-                      'plot_manifold', false,...  % ['2D','3D',false]
-                      'plot_projData', true...   % [true,false]
-                      );
-                  
-PlotEigenfun(eigenData, plot_options);
+% plot_options = struct('xlims', [0 100],...        % 1x2 vector  
+%                       'ylims', [0 100],...        % 1x2 vector
+%                       'resoultion', 'medium',...  % ['low','medium','high']
+%                       'type', '2D',...            % ['2D','3D']
+%                       'components', 1:8,...       % 1xn vector or scalar
+%                       'plot_data', true,...       % [true,false]
+%                       'labels', X(end,:),...      % 1xm vector 
+%                       'plot_stream', false,...    % [true,false]
+%                       'plot_eigens', false,...    % [true,false]
+%                       'plot_mapped', false,...     % ['2D','3D',false]
+%                       'plot_manifold', false,...  % ['2D','3D',false]
+%                       'plot_projData', true...   % [true,false]
+%                       );
+%                   
+% PlotEigenfun(eigenData, plot_options);
 
 %% Scatter
-labels = X(end,:);
-colors = hsv(length(unique(labels)));
-alpha_s = eigvect_r(:,3:end);
-
-np = 8;
-h=gcf;
-for i = 1:np
-   for j = 1:np
-      subplot(np,np,i+np*(j-1))
-      scatter(alpha_s(:,i),alpha_s(:,j),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
-      grid on;
-   end
-end
+% labels = X(end,:);
+% colors = hsv(length(unique(labels)));
+% alpha_s = eigvect_r(:,3:end);
+% 
+% np = 8;
+% h=gcf;
+% for i = 1:np
+%    for j = 1:np
+%       subplot(np,np,i+np*(j-1))
+%       scatter(alpha_s(:,i),alpha_s(:,j),20,colors(labels,:),'filled','MarkerEdgeColor',[0 0 0]);
+%       grid on;
+%    end
+% end
 
 % set(h,'PaperOrientation','landscape');
 % set(h,'PaperUnits','normalized');

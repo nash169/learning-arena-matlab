@@ -44,7 +44,7 @@ myrbf.set_params('sigma', length);
 K = myrbf.gramian(X,X);
 myrbf.plot_gramian;
 
-%% Kernel PCA
+%% Kernel ECA
 ke = kernel_eca('kernel', myrbf);
 % Set data
 ke.set_data(X);

@@ -40,10 +40,11 @@ for i = 1:n_attracts
     dynamics{i,3} = lambda(column);
     dynamics{i,4} = eigenvects(row,column);
     dynamics{i,5} = eigvect_l(row,i);
+    dynamics{i,6} = row;
 end
 
 % Search attractors
-k_cos = Kernels2('cosine');
+k_cos = Kernels('cosine');
 
 for i = 1:n_attracts
     points = zeros((size(dynamics{i,4},2)+1), size(dynamics{i,4},2),2);
@@ -65,14 +66,14 @@ for i = 1:n_attracts
     end
     points1 = reshape(points(1,:,:), 2,size(dynamics{i,4},2),[])';
     points2 = reshape(points(2,:,:), 2,size(dynamics{i,4},2),[])';
-    dynamics{i,6} = Intersect2Lines(points1, points2)';
+    dynamics{i,7} = Intersect2Lines(points1, points2)';
     
     figure
     scatter(dynamics{i,4}(:,1), dynamics{i,4}(:,2))
     hold on
     scatter(points1(:,1),points1(:,2),'filled','MarkerEdgeColor',[0 0 0])
     scatter(points2(:,1),points2(:,2),'filled','MarkerEdgeColor',[0 0 0])
-    scatter(dynamics{i,6}(1),dynamics{i,6}(2),'filled','MarkerEdgeColor',[0 0 0])
+    scatter(dynamics{i,7}(1),dynamics{i,7}(2),'filled','MarkerEdgeColor',[0 0 0])
 end
 
 end

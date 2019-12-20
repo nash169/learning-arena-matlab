@@ -10,7 +10,7 @@ classdef diffusion_maps < manifold_learning
             if  ~isfield(obj.params_, 'kernel')
                 obj.params_.kernel = rbf; 
                 obj.params_.kernel.set_params('sigma', 5.);
-                obj.params_.epsilon = obj.params_.kernel.params('sigma').^2;
+                obj.params_.epsilon = 2*obj.params_.kernel.params('sigma').^2;
             end
             if ~isfield(obj.params_, 'operator'); obj.params_.operator = 'transport'; end
         end

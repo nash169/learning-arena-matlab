@@ -24,7 +24,8 @@ classdef polynomial < abstract_kernel
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.h_params_list_ = ['weight', 'degree', 'const', obj.h_params_list_];
+            obj.h_params_list_ = ['degree', 'const', obj.h_params_list_];
+%             obj.h_params_list_ = ['weight', 'degree', 'const', obj.h_params_list_];
         end
         
         function d = num_params(obj, name)

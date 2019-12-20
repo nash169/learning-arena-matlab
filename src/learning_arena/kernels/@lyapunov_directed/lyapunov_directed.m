@@ -1,36 +1,26 @@
-classdef velocity_directed < abstract_kernel
-    %VELOCITY_DIRECTED Summary of this class goes here
+classdef lyapunov_directed < abstract_kernel
+    %LYAPUNOV_DIRECTED Summary of this class goes here
     %   Detailed explanation goes here
     
     %=== PUBLIC ===%
     methods
-        function obj = velocity_directed(varargin)
-            %VELOCITY_DIRECTED Construct an instance of this class
+        function obj = lyapunov_directed(varargin)
+            %LYAPUNOV_DIRECTED Construct an instance of this class
             %   Detailed explanation goes here
             obj = obj@abstract_kernel(varargin{:}); 
             
-            if ~isfield(obj.params_, 'isnan')
-                obj.params_.isnan = 1;
-                obj.cosine_.set_params('isnan', obj.params_.isnan);
-            end
+            if ~isfield(obj.params_, 'isnan'); obj.params_.isnan = 0; end
+            obj.is_field_ = false;
         end
 
         function set_params(obj, varargin)
             set_params@abstract_kernel(obj, varargin{:});
-            if logical(sum(strcmp(varargin, 'v_field')))
-                obj.cosine_.set_data(obj.h_params_.v_field{:});
-            end
-            
             if logical(sum(strcmp(varargin, 'sigma')))
                 obj.rbf_.set_params('sigma', obj.h_params_.sigma);
             end
             
             if logical(sum(strcmp(varargin, 'angle')))
                 obj.alpha_ = 2/(1-cos(obj.h_params_.angle));
-            end
-            
-            if logical(sum(strcmp(varargin, 'isnan')))
-                obj.cosine_.set_params('isnan', obj.params_.isnan);
             end
         end
 
@@ -44,8 +34,10 @@ classdef velocity_directed < abstract_kernel
     properties (Access = protected)
         alpha_;
         
+        v_field_;
+        is_field_;
+        
         rbf_;
-        cosine_;
     end
     
     methods (Access = protected)
@@ -55,7 +47,14 @@ classdef velocity_directed < abstract_kernel
             obj.params_list_ = ['isnan', obj.params_list_];
 
             obj.rbf_ = rbf;
-            obj.cosine_ = cosine;
+        end
+        
+        function check(obj)
+            check@abstract_kernel(obj);
+            if ~obj.is_field_
+                obj.v_field_ = repmat(obj.h_params_.v_field,obj.n_,1);
+                obj.is_field_ = true;
+            end
         end
         
         function d = num_params(obj, name)
@@ -68,7 +67,10 @@ classdef velocity_directed < abstract_kernel
         end
         
         function k = calc_kernel(obj)
-            q = obj.alpha_*(1-obj.cosine_.kernel)*1.5*obj.h_params_.sigma;
+            cross_cos = -sum(obj.diff_.*obj.v_field_,2)./vecnorm(obj.diff_,2,2)./vecnorm(obj.v_field_,2,2);
+            cross_cos(isnan(cross_cos)) = obj.params_.isnan;
+            q = obj.alpha_*(1-cross_cos)*1.5*obj.h_params_.sigma;
+            
             k = obj.rbf_.kernel.*exp(-q);
         end
         

@@ -1,14 +1,15 @@
-classdef velocity_directed < abstract_kernel
+classdef velocity_augmented < abstract_kernel
     %VELOCITY_DIRECTED Summary of this class goes here
     %   Detailed explanation goes here
     
-    %=== PUBLIC ===%
+%=== PUBLIC ===%
     methods
-        function obj = velocity_directed(varargin)
+        function obj = velocity_augmented(varargin)
             %VELOCITY_DIRECTED Construct an instance of this class
             %   Detailed explanation goes here
-            obj = obj@abstract_kernel(varargin{:}); 
+            obj = obj@abstract_kernel(varargin{:});
             
+            if ~isfield(obj.h_params_, 'weight'); obj.h_params_.weight = .5; end
             if ~isfield(obj.params_, 'isnan')
                 obj.params_.isnan = 1;
                 obj.cosine_.set_params('isnan', obj.params_.isnan);
@@ -24,11 +25,7 @@ classdef velocity_directed < abstract_kernel
             if logical(sum(strcmp(varargin, 'sigma')))
                 obj.rbf_.set_params('sigma', obj.h_params_.sigma);
             end
-            
-            if logical(sum(strcmp(varargin, 'angle')))
-                obj.alpha_ = 2/(1-cos(obj.h_params_.angle));
-            end
-            
+
             if logical(sum(strcmp(varargin, 'isnan')))
                 obj.cosine_.set_params('isnan', obj.params_.isnan);
             end
@@ -42,8 +39,6 @@ classdef velocity_directed < abstract_kernel
     
 %=== PROTECTED ===%
     properties (Access = protected)
-        alpha_;
-        
         rbf_;
         cosine_;
     end
@@ -51,7 +46,7 @@ classdef velocity_directed < abstract_kernel
     methods (Access = protected)
         function signature(obj)
             obj.type_ = {'scalar_valued'};
-            obj.h_params_list_ = ['sigma', 'v_field', 'angle', obj.h_params_list_];
+            obj.h_params_list_ = ['sigma', 'v_field', 'weight', obj.h_params_list_];
             obj.params_list_ = ['isnan', obj.params_list_];
 
             obj.rbf_ = rbf;
@@ -68,8 +63,7 @@ classdef velocity_directed < abstract_kernel
         end
         
         function k = calc_kernel(obj)
-            q = obj.alpha_*(1-obj.cosine_.kernel)*1.5*obj.h_params_.sigma;
-            k = obj.rbf_.kernel.*exp(-q);
+            k = obj.h_params_.weight*obj.rbf_.kernel + (1-obj.h_params_.weight)*(1+obj.cosine_.kernel)*0.5;
         end
         
         function dk = calc_gradient(obj)
@@ -82,3 +76,4 @@ classdef velocity_directed < abstract_kernel
         end
     end
 end
+

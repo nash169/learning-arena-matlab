@@ -60,7 +60,7 @@ G = G1.*G3;
 myrbf = rbf('sigma', sigma);
 
 %Velocity-augmented kernel
-myvel = velocity_directed('sigma', sigma, 'v_field', {V,V}, 'weight', 0.5);
+myvel = velocity_augmented('sigma', sigma, 'v_field', {V,V}, 'weight', 0.5);
 
 % Create object
 ke = kernel_eca('kernel', myrbf);

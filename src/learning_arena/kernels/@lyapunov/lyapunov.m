@@ -74,7 +74,7 @@ classdef lyapunov < abstract_kernel
         
         function k = calc_kernel(obj)
             % Define symmetric part
-            sym = obj.h_params_.sym_weight*obj.h_params_.kernel.kernel;
+            sym = obj.h_params_.kernel.kernel;
             
             % Get gradient of the kernel (this can be changed and 
             % influences the type fo kernel; switch necessary)
@@ -82,13 +82,13 @@ classdef lyapunov < abstract_kernel
             kernel_grad = kernel_grad(:,:,1);
             
             % Define asymmetric part
-            asym = obj.h_params_.asym_weight*sum(kernel_grad.*obj.v_field_,2);
+            asym = sum(kernel_grad.*obj.v_field_,2);
             if obj.params_.normalize
                 asym = asym./vecnorm(kernel_grad,2,2)./vecnorm(obj.v_field_,2,2);
                 asym(isnan(asym)) = obj.params_.isnan;
             end
             
-            k = sym + asym;
+            k = obj.h_params_.sym_weight*sym + obj.h_params_.asym_weight*asym;
         end
         
         function dk = calc_gradient(obj)
