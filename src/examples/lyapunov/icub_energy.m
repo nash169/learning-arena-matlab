@@ -10,8 +10,8 @@ demo_joints = [ds1.demo_joints;
                ds3.demo_joints];
            
 demo_obj_pos = [ds1.demo_obj_pos; 
-                ds2.demo_obj_pos; 
-                ds3.demo_obj_pos];
+                ds2.demo_obj_pos]; 
+%                 ds3.demo_obj_pos];
             
 demo_obj_rot = [ds1.demo_obj_rot; 
                 ds2.demo_obj_rot; 
@@ -83,9 +83,12 @@ v_joints = v_joints(:,red_start:red_end);
 T_joints = T_joints(:,red_start:red_end);
 
 % Set data and normalize
-X = (x_joints - mean(x_joints))./std(x_joints);
-V = (v_joints - mean(v_joints))./std(v_joints);
-dt = dt_joints;
+X = x_obj_pos;
+V = v_obj_pos;
+dt = dt_obj_pos;
+% X = (x_joints - mean(x_joints))./std(x_joints);
+% V = (v_joints - mean(v_joints))./std(v_joints);
+% dt = dt_joints;
 M = size(X,1);
 
 % Sigma estimation based on sample frequency
@@ -94,7 +97,7 @@ v_norm(isnan(v_norm)) = 0;
 [m,~] = size(X);
 
 max_d = max(vecnorm(V,2,2).*dt);
-scale = 3;
+scale = 2;
 sigma = scale*max_d;
 
 %% Create kernels
@@ -129,22 +132,22 @@ G2 = graph_build(X, 'type', 'eps-neighborhoods', 'r', -0.8, 'fun', @(x,y) -mylya
 G3 = graph_build(V, 'type', 'eps-neighborhoods', 'r', -0.9, 'fun', @(x,y) -mycosine.kernel(x,y));
 
 
-G4 = graph_build(X, 'type', 'eps-neighborhoods', 'r', -0.8, 'fun', @(x,y) -mydir_lyap.kernel(x,y));
+G4 = graph_build(X, 'type', 'eps-neighborhoods', 'r', -0.9, 'fun', @(x,y) -mydir_lyap.kernel(x,y));
 
-G5 = graph_build(X, 'type', 'eps-neighborhoods', 'r', -0.95, 'fun', @(x,y) -mydir_vel.kernel(x,y));
+G5 = graph_build(X, 'type', 'eps-neighborhoods', 'r', -0.9, 'fun', @(x,y) -mydir_vel.kernel(x,y));
 
 % Total graph
 G = G1.*G3;
 
 %% Manifold Learning
 % Create object
-dm = diffusion_maps('kernel', myrbf, 'alpha', 1, 'epsilon', 2*sigma^2, 'operator', 'transport');
+dm = diffusion_maps('kernel', myrbf, 'alpha', 0, 'epsilon', 2*sigma^2, 'operator', 'transport');
 
 % Set the dataset
 dm.set_data(X);
 
 % Set the graph
-dm.set_graph(G4);
+dm.set_graph(G1);
 
 [D,R,L] = dm.eigensolve;
 

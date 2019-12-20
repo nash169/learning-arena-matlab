@@ -36,7 +36,7 @@ v_norm(isnan(v_norm)) = 0;
 [m,~] = size(X);
 
 max_d = max(vecnorm(V,2,2).*dt);
-scale = 3;
+scale = 2;
 sigma = scale*max_d;
 
 %% Draw data
@@ -95,7 +95,7 @@ dm = diffusion_maps('kernel', myrbf, 'alpha', 1, 'epsilon', 2*sigma^2, 'operator
 dm.set_data(X);
 
 % Set the graph
-dm.set_graph(G4);
+dm.set_graph(G5);
 
 %% Plot spectral analysis
 % Plot spectrum
