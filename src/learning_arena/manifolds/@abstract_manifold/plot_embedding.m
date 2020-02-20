@@ -19,7 +19,7 @@ switch obj.dim_
                40, obj.fig_options_.colors, 'filled','MarkerEdgeColor',[0 0 0])
        end
        
-   otherwise
+    otherwise
        surf(phi{1}, phi{2}, phi{3}, 'FaceAlpha', 0.5, varargin{:})
        shading interp
        axis equal
