@@ -39,7 +39,7 @@ switch obj.num_h_params_
         obj.is_sigma_ = true;
         obj.is_sigma_inv_ = true;
 
-    % Spherical m-points dependent
+    % Spherical N-points dependent
     case obj.n_
         if obj.debug; disp('Spherical - n'); end
         obj.type_cov_ = 1;
