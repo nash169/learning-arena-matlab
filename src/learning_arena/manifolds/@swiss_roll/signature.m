@@ -1,14 +1,13 @@
 function signature(obj)
-%SIGNATURE Summary of this function goes here
-%   Detailed explanation goes here
+    %SIGNATURE Summary of this function goes here
+    %   Detailed explanation goes here
 
-% List of parameters for the 3D embedding 
-obj.params_list_ = {'width'};
+    % List of parameters for the 3D embedding
+    obj.params_list_ = {'width'};
 
-% Default boundaries to draw the embedding
-obj.extrema_ = {0, 2*pi, 0, 1};
+    % Default boundaries to draw the embedding
+    obj.extrema_ = {0, 2 * pi, 0, 1};
 
-% Manifold dimension
-obj.dim_ = 2;
+    % Manifold dimension
+    obj.dim_ = 2;
 end
-
