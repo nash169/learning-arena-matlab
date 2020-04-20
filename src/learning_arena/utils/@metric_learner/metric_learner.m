@@ -32,17 +32,17 @@ classdef metric_learner < handle
         % Get the parameters. Not very useful at the moment
         params = params(obj, parameter)
 
-        h = embedding_metric(obj, intrinsic_dim)
+        [h, h_inv] = metric(obj)
+
+        f = embedding(obj)
     end
 
     methods (Access = protected)
         check(obj)
 
         reset(obj)
-    end
 
-    methods (Access = protected, Static = true)
-        h = metric_invert(metric_inv, d)
+        metric_invert(obj, metric_inv)
     end
 
     properties
@@ -52,14 +52,15 @@ classdef metric_learner < handle
     properties (Access = protected)
         params_
         laplace_
-        embedding_metric_
         metric_
+        metric_inv_
         eigs_
+        embedding_
 
         is_params_
         is_laplace_
-        is_embedding_metric_
         is_metric_
+        is_embedding_
     end
 
 end

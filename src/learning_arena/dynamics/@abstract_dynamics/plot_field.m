@@ -8,7 +8,7 @@ obj.fig_options(options);
 
 if ~obj.is_grid_; obj.set_data(obj.fig_options_.res, obj.fig_options_.grid{:}); end
 
-X = obj.vector_field;
+X = obj.field;
 
 switch obj.d_
    case 1

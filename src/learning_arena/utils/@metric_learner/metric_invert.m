@@ -1,28 +1,27 @@
-function h = metric_invert(metric_inv, d)
-    s = size(metric_inv, 2);
-
+function metric_invert(obj, h_inv)
     % Metric inverse eigen decomposition
-    [h_inv, ~, ~] = blk_matrix(metric_inv);
+    [h_inv, ~, ~] = blk_matrix(h_inv);
     [U, D] = eig(full(h_inv));
 
     %  Reshape the eigenvalue matrix
-    D = c_reshape(diag(D), [], s);
+    D = c_reshape(diag(D), [], size(h_inv, 2));
+
     % Sort the eingevalues
-    [D, I] = sort(D, 2, 'descend');
+    [~, I] = sort(D, 2, 'descend');
+
     % Select intrinsic dimension
-    D = D(:, 1:d);
+    D_inv = 1 ./ D;
+    D(I > obj.params_.dim) = 0;
+    D_inv(I > obj.params_.dim) = 0;
+
     % Rebuild sparse matrix
+    D_inv = sparse_eye(c_reshape(D_inv, [], 1));
     D = sparse_eye(c_reshape(D, [], 1));
 
-    % Reshape eigenvector matrix
-    U = blk_revert(U, s);
-    % Sort eigenvectors
-    U = U(:, repelem(I, s, 1));
-    % Select intrinsic dimension
-    U = U(:, 1:d);
-    % Rebuild sparse matrix
-    U = blk_matrix(U);
+    % Rebuild sparse eigenvectors matrix
+    U = sparse(U);
 
     % Calculate the embedding space metric
-    h = U * (D \ U');
+    obj.metric_ = U * D * U';
+    obj.metric_inv_ = U * D_inv * U';
 end
