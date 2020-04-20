@@ -1,23 +1,31 @@
-function [h, h_inv] = metric(obj)
-    obj.check;
+function h = metric(obj)
 
     if ~obj.is_metric_
-        s = length(obj.params_.space);
+        h_inv = obj.metric_inverse;
 
-        f = obj.params_.manifold.embedding(obj.params_.space);
-        f_i = repmat(f, 1, s);
-        f_j = repelem(f, 1, s);
+        [m, s] = size(h_inv);
 
-        L = obj.laplace_.infinitesimal;
+        D = zeros(m / s, s);
+        U = zeros(m, s);
 
-        h_inv = (L * (f_i .* f_j) - f_i .* (L * f_j) - f_j .* (L * f_i)) / 2;
-        h_inv = c_reshape(h_inv, [], s);
+        for i = 1:m / s
+            [U(s * (i - 1) + 1:s * (i - 1) + s, :), D(i, :)] = eig(h_inv(s * (i - 1) + 1:s * (i - 1) + s, :), 'vector');
+        end
 
-        obj.metric_invert(h_inv);
+        % Reshape the eigenvalue matrix
+        [~, I] = sort(D, 2);
+        D = 1 ./ D;
+        D(I > obj.params_.dim) = 0;
+        D(D == Inf) = 0;
+        D = sparse_eye(c_reshape(D, [], 1));
+
+        U = blk_matrix(U);
+
+        % Calculate the embedding metric
+        obj.metric_ = U' * D * U;
 
         obj.is_metric_ = true;
     end
 
-    if nargout > 0; h = obj.metric_; end
-    if nargout > 1; h_inv = obj.metric_inv_; end
+    h = blk_revert(obj.metric_, length(obj.params_.space));
 end

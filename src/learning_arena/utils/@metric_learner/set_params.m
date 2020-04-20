@@ -7,5 +7,4 @@ function set_params(obj, varargin)
 
     obj.is_params_ = false;
     obj.reset;
-
 end

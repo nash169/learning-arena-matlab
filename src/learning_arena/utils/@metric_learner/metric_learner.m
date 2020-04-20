@@ -19,8 +19,6 @@ classdef metric_learner < handle
                 obj.params_.epsilon = obj.params_.epsilon / 4; % c = 1/4
             end
 
-            obj.laplace_ = diffusion_maps('alpha', 1, 'operator', 'inifinitesimal');
-            obj.laplace_.graph_options('type', 'k-nearest', 'k', 10);
             obj.reset;
 
         end
@@ -32,8 +30,16 @@ classdef metric_learner < handle
         % Get the parameters. Not very useful at the moment
         params = params(obj, parameter)
 
-        [h, h_inv] = metric(obj)
+        % Get the Laplacian
+        L = laplacian(obj);
 
+        % Get inverse of the embedding metric
+        h_inv = metric_inverse(obj)
+
+        % Get embedding metric
+        h = metric(obj)
+
+        % Get metric corrected embedding
         f = embedding(obj)
     end
 
@@ -41,8 +47,6 @@ classdef metric_learner < handle
         check(obj)
 
         reset(obj)
-
-        metric_invert(obj, metric_inv)
     end
 
     properties
@@ -51,15 +55,21 @@ classdef metric_learner < handle
 
     properties (Access = protected)
         params_
-        laplace_
+
+        laplacian_
+
         metric_
         metric_inv_
-        eigs_
+
         embedding_
 
         is_params_
-        is_laplace_
+
+        is_laplacian_
+
         is_metric_
+        is_metric_inv_
+
         is_embedding_
     end
 

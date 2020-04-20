@@ -10,12 +10,4 @@ function check(obj)
         obj.is_params_ = true;
     end
 
-    if ~obj.is_laplace_
-        data = obj.params_.manifold.data;
-        obj.laplace_.set_data(data);
-        obj.laplace_.set_params('kernel', obj.params_.kernel, ...
-            'epsilon', obj.params_.epsilon);
-        obj.is_laplace_ = true;
-    end
-
 end

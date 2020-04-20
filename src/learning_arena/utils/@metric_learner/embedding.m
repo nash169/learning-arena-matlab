@@ -1,15 +1,21 @@
 function f = embedding(obj)
-    obj.check;
 
     if ~obj.is_embedding_
+        f = obj.params_.manifold.embedding(obj.params_.space);
+        h = obj.metric;
 
-        phi = obj.params_.manifold.embedding(obj.params_.space);
-        [~, h_inv] = obj.metric;
+        [m, s] = size(f);
 
-        obj.embedding_ = c_reshape(h_inv * c_reshape(phi, [], 1), [], size(phi, 2));
+        obj.embedding_ = zeros(m, s);
+
+        for i = 1:m
+            obj.embedding_(i, :) = h(s * (i - 1) + 1:s * (i - 1) + s, :)^0.5 \ f(i, :)';
+        end
+
+        obj.embedding_ = real(obj.embedding_);
 
         obj.is_embedding_ = true;
     end
 
-    if nargout > 0; f = obj.embedding_; end
+    f = obj.embedding_;
 end

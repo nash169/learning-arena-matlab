@@ -1,5 +1,4 @@
 function params = params(obj, parameter)
-
     assert(logical(sum(strcmp(obj.params_name_, parameter))), ...
         '"%s" parameter not present', parameter)
 
