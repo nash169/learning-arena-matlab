@@ -8,10 +8,10 @@ classdef metric_learner < handle
             %   Detailed explanation goes here
             if nargin > 0; obj.set_params(varargin{:}); end
 
-            if ~isfield(obj.params_, "kernel")
+            if ~isfield(obj.params_,  "kernel")
                 obj.params_.kernel = rbf;
 
-                if ~isfield(obj.params_, "epsilon")
+                if ~isfield(obj.params_,  "epsilon")
                     obj.params_.epsilon = 5.; % epsilon = 5
                 end
 
@@ -41,6 +41,9 @@ classdef metric_learner < handle
 
         % Get metric corrected embedding
         f = embedding(obj)
+
+        % Plot embedding
+        fig = plot(obj, colors, fig)
     end
 
     methods (Access = protected)
@@ -50,7 +53,7 @@ classdef metric_learner < handle
     end
 
     properties
-        params_name_ = {'manifold', 'space', 'dim', 'kernel', 'epsilon'}
+        params_name_ = {'manifold',  'space',  'dim',  'kernel',  'epsilon'}
     end
 
     properties (Access = protected)
@@ -62,6 +65,8 @@ classdef metric_learner < handle
         metric_inv_
 
         embedding_
+
+        colors_
 
         is_params_
 

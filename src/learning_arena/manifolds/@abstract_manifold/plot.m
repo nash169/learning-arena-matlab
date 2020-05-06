@@ -18,7 +18,7 @@ function fig = plot(obj, options, fig, varargin)
 
             if obj.fig_options_.sample
                 if ~obj.is_sampled_; error('Samples not present'); end
-                scatter(obj.samples_{1}, obj.samples_{2}, 40, obj.fig_options_.colors, 'filled', 'MarkerEdgeColor', [0 0 0])
+                scatter(obj.samples_{1}, obj.samples_{2}, 40, obj.fig_options_.colors,  'filled',  'MarkerEdgeColor', [0 0 0])
                 axis equal
             end
 
@@ -27,7 +27,7 @@ function fig = plot(obj, options, fig, varargin)
             if obj.fig_options_.embedding
                 if ~obj.is_grid_; obj.set_data(obj.fig_options_.res, obj.fig_options_.grid{:}); end
                 phi = obj.embedding;
-                surf(phi{1}, phi{2}, phi{3}, 'FaceAlpha', 0.5, varargin{:})
+                surf(phi{1}, phi{2}, phi{3},  'FaceAlpha', 0.5, varargin{:})
                 shading interp
                 axis equal
                 hold on;
@@ -35,8 +35,7 @@ function fig = plot(obj, options, fig, varargin)
 
             if obj.fig_options_.sample
                 if ~obj.is_sampled_; error('Samples not present'); end
-                scatter3(obj.samples_{1}, obj.samples_{2}, obj.samples_{3}, 40, obj.fig_options_.colors, 'filled', 'MarkerEdgeColor', [0 0 0])
-                colorbar
+                scatter3(obj.samples_{1}, obj.samples_{2}, obj.samples_{3}, 40, obj.fig_options_.colors,  'filled',  'MarkerEdgeColor', [0 0 0])
                 axis equal
             end
 

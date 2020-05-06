@@ -6,7 +6,7 @@ function signature(obj)
     obj.params_list_ = {'width'};
 
     % Default boundaries to draw the embedding
-    obj.extrema_ = {0, 2 * pi, 0, 1};
+    obj.extrema_ = {0, 4 * pi, 0, 1};
 
     % Manifold dimension
     obj.dim_ = 2;
