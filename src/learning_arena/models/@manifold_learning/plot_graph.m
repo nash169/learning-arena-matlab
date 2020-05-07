@@ -1,4 +1,4 @@
-function fig = plot_graph(obj, space_type, space)
+function fig = plot_graph(obj, space_type, space, fig)
 % Plot graph
 assert(obj.is_data_, 'Data not present')
 
@@ -14,7 +14,7 @@ switch space_type
         error('Space not found')
 end
 
-fig = figure;
+if nargin < 4; fig = figure; else; figure(fig); hold on; end
 
 % G = digraph(obj.graph, 'omitselfloops');
 % nodes = {'XData', data(:,1), 'YData', data(:,2)};
@@ -26,7 +26,9 @@ diff = -(repmat(data,obj.m_,1) - repelem(data,obj.m_,1));
 nodes = repmat(data,obj.m_,1);
 
 if obj.d_ == 2
-    quiver(nodes(G(:),1),nodes(G(:),2), diff(G(:),1), diff(G(:),2), 0)
+    h = quiver(nodes(G(:),1),nodes(G(:),2), diff(G(:),1), diff(G(:),2), 0, '-');
+    pause(0.1)
+    h.NodeChildren(3).Visible = 'off';
 else
     quiver3(nodes(G(:),1),nodes(G(:),2), nodes(G(:),3), diff(G(:),1), diff(G(:),2), diff(G(:),3), 0)
 end

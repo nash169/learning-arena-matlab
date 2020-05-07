@@ -56,7 +56,7 @@ classdef manifold_learning < handle
 
         fig = plot_embedding(obj, space, colors, fig)
 
-        fig = plot_graph(obj, space_type, space)
+        fig = plot_graph(obj, space_type, space, fig)
 
         fig = plot_similarity(obj)
     end
