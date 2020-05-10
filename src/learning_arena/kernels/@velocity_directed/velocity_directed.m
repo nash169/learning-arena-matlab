@@ -76,7 +76,7 @@ classdef velocity_directed < abstract_kernel
         function k = calc_kernel(obj)
             % q = obj.alpha_ * (1 - obj.cosine_.kernel) * 1.5 * obj.h_params_.sigma;
             q = 3 * obj.h_params_.sigma * (1 - obj.cosine_.kernel) / (1 - cos(obj.h_params_.angle));
-            k = obj.rbf_.kernel .* exp(-q);
+            k = obj.rbf_.kernel .* exp(-q.^2/2 / obj.h_params_.sigma);
         end
 
         function dk = calc_gradient(obj)
