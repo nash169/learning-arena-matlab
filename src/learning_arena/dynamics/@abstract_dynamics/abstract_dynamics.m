@@ -46,8 +46,6 @@ classdef abstract_dynamics < handle
         S = sample(obj, num_traj, sampling_center, time_window)
 
         h = plot_field(obj, options, fig, vararing)
-
-        f = calc_field(obj)
     end
 
     %=== PROTECTED ===%
@@ -90,6 +88,8 @@ classdef abstract_dynamics < handle
     %=== ABSTRACT ===%
     methods (Abstract = true, Access = protected)
         signature(obj)
+
+        calc_field(obj)
     end
 
 end
