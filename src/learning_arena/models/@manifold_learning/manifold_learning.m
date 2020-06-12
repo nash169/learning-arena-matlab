@@ -5,7 +5,7 @@ classdef manifold_learning < handle
     %=== PUBLIC ===%
     properties
         type_
-        params_name_
+        params_name_ = {'num_eigs'}
     end
 
     methods
@@ -15,6 +15,8 @@ classdef manifold_learning < handle
             %   Detailed explanation goes here
             obj.signature;
             if nargin > 0; obj.set_params(varargin{:}); end
+
+            if ~isfield(obj.params_, 'num_eigs'); obj.params_.num_eigs = 10; end
 
             obj.is_graph_ = false;
             obj.reset;
@@ -28,9 +30,7 @@ classdef manifold_learning < handle
 
         data = data(obj)
 
-        set_graph(obj, G)
-
-        graph_options(obj, varargin)
+        set_graph(obj, varargin)
 
         set_colors(obj, colors)
 

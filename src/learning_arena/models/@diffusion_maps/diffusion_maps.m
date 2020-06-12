@@ -15,21 +15,30 @@ classdef diffusion_maps < manifold_learning
             if ~isfield(obj.params_, 'operator'); obj.params_.operator = 'transport'; end
         end
         
-        function M = transport(obj)
+        function T = transport(obj)
             if ~obj.is_transport_
                 S = obj.similarity;
                 D = obj.degree(S);
-                M = D^-obj.params_.alpha*S*D^-obj.params_.alpha;
-                obj.transport_ = obj.degree(M)\M;
+
+                switch obj.params_.alpha
+                    case 0 
+                        obj.transport_ = D\S;
+                    case 1
+                        obj.transport_ = D\S/D;
+                        obj.transport_ = obj.degree(obj.transport_)\obj.transport_;
+                    otherwise
+                        obj.transport_ = D^-obj.params_.alpha*S*D^-obj.params_.alpha;
+                        obj.transport_ = obj.degree(obj.transport_)\obj.transport_;
+                end
                 obj.is_transport_ = true;
             end
             
-            if nargout > 0; M = obj.transport_; end
+            if nargout > 0; T = obj.transport_; end
         end
         
         function L = infinitesimal(obj)
             if ~obj.is_infinitesimal_
-                obj.infinitesimal_ = (eye(obj.m_) - obj.transport)/obj.params_.epsilon;
+                obj.infinitesimal_ = (speye(obj.m_) - obj.transport)/obj.params_.epsilon;
                 obj.is_infinitesimal_ = true;
             end
             
@@ -39,7 +48,7 @@ classdef diffusion_maps < manifold_learning
     
     methods (Access = protected)
         function signature(obj)            
-            obj.params_name_ = {'kernel', 'alpha', 'epsilon', 'operator'};
+            obj.params_name_ = ['kernel', 'alpha', 'epsilon', 'operator', obj.params_name_];
             obj.type_ = {'graph-less'};
         end
         
@@ -50,20 +59,29 @@ classdef diffusion_maps < manifold_learning
            obj.is_infinitesimal_ = false;
         end
         
-        function [V,D,W] = solve(obj)            
+        function [V,D,W] = solve(obj)      
             switch obj.params_.operator
                 case 'transport'
-                    [V,D,W] = eig(obj.transport);
-                    [a, b] = sort(diag(D),'descend');
-                    D = diag(a);
-                    V = V(:,b);
-                    W = W(:,b);       
+                    % Sparse matrix solution
+                    [V,D] = eigs(obj.transport, obj.params_.num_eigs, 'largestabs', 'Tolerance',1e-10, 'MaxIterations', 5000);
+                    [W,~] = eigs(obj.transport', obj.params_.num_eigs, 'largestabs', 'Tolerance',1e-10, 'MaxIterations', 5000);
+                    
+                    % Full matrix solution
+                    % [V,D,W] = eig(full(obj.transport));
+                    % [a, b] = sort(diag(D),'descend');
+                    % D = diag(a);
+                    % V = V(:,b);
+                    % W = W(:,b);
                 case 'infinitesimal'
-                    [V,D,W] = eig(obj.infinitesimal);
-                    [a, b] = sort(diag(D),'ascend');
-                    D = diag(a);
-                    V = V(:,b);
-                    W = W(:,b); 
+                    [V,D] = eigs(obj.transport, obj.params_.num_eigs, 'smallestabs');
+                    [W,~] = eigs(obj.transport', obj.params_.num_eigs, 'smallestabs');
+
+                    % Full matrix solution
+                    % [V,D,W] = eig(full(obj.transport));
+                    % [a, b] = sort(diag(D),'ascend');
+                    % D = diag(a);
+                    % V = V(:,b);
+                    % W = W(:,b);
                 otherwise
                     error('Case not found')
             end
