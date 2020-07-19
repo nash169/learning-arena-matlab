@@ -60,7 +60,7 @@ classdef laplacian_eigenmaps < manifold_learning
             % generalized eigenvalue problem (D-S)*v = lambda*D*v or the
             % eigenvalue problem (I-D\S)*v = lambda*v. In addition using
             %'eig' or 'eig' could change the solution too.
-            [V,D,W] = eig(obj.laplacian);
+            [V,D,W] = eig(full(obj.laplacian));
             
             [a, b] = sort(diag(D),'ascend');
             D = diag(a);

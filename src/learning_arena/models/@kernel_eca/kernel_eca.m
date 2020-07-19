@@ -45,22 +45,23 @@ classdef kernel_eca < manifold_learning
     
     methods (Access = protected)
         function signature(obj)
-            obj.params_name_ = {'kernel'};
+            obj.params_name_ = ['kernel', obj.params_name_];
             obj.type_ = {'graph-less'};
         end
         
         function [V,D,W] = solve(obj)
-            S = full(obj.similarity/obj.m_); % Think about eigs for asym sparse matrix
-%             [V,D,W] = eig(S);
-%             [obj.entropy_, obj.order_] = sort(sum(V*sqrt(D)).^2, 'descend');
-%             D = D(obj.order_,obj.order_);
-%             V = V(:,obj.order_);
-%             W = W(:,obj.order_);
-            n = 10;
-            [V,D] = eigs(S, n, 'largestreal');
+            % Full solve
+            % [V,D,W] = eig(S);
+            % [obj.entropy_, obj.order_] = sort(sum(V*sqrt(D)).^2, 'descend');
+            % D = D(obj.order_,obj.order_);
+            % V = V(:,obj.order_);
+            % W = W(:,obj.order_);
+            
+            % Sparse solve
+            [V,D] = eigs(obj.similarity, obj.params_.num_eigs, 'largestabs', 'Tolerance', 1e-14, 'MaxIterations', 1000); % obj.similarity/obj.m_
             [obj.entropy_, obj.order_] = sort(diag(D).*sum(V)'.^2, 'descend');
             V = V(:, obj.order_);
-            W = 0;
+            W = V;
         end
     end
 end
