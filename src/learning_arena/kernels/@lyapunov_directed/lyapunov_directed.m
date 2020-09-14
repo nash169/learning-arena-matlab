@@ -87,6 +87,8 @@ classdef lyapunov_directed < abstract_kernel
 
             k = obj.rbf_.kernel .* exp((-obj.map(cross_i).^2 -obj.map(cross_j).^2) / 2 / obj.h_params_.sigma^2);
 
+            % k = obj.rbf_.kernel .* exp((-obj.map(cross_i).^2) / 2 / obj.h_params_.sigma^2);
+
             % cross_cos = -sum(obj.diff_ .* obj.v_field_, 2) ./ vecnorm(obj.diff_, 2, 2) ./ vecnorm(obj.v_field_, 2, 2);
             % cross_cos(isnan(cross_cos)) = obj.params_.isnan;
             % q = obj.alpha_ * (1 - cross_cos) * 1.5 * obj.h_params_.sigma;
