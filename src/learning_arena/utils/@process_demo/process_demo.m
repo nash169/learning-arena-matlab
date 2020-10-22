@@ -95,6 +95,29 @@ classdef process_demo < handle
 
                     data = obj.smooth_data(data);
 
+                    % Adjust velocities
+                    if isfield(obj.indices_, 'velocity')
+                        magnitude = vecnorm(data(obj.indices_.('velocity'), 1:end-1),2,1);
+                        direction = data(obj.indices_.('position'), 2:end) - data(obj.indices_.('position'), 1:end - 1);
+                        vel = direction./vecnorm(direction,2,1).*magnitude;
+                        data(obj.indices_.('velocity'), :) = [vel, zeros(obj.dimension_, 1)];
+                    end
+                    
+                    % Adjust time
+                    if isfield(obj.indices_, 'time')
+                        vel = vecnorm(data(obj.indices_.('velocity'), 1:end-1),2,1);
+                        space = vecnorm(data(obj.indices_.('position'), 2:end) - data(obj.indices_.('position'), 1:end - 1),2,1);
+                        steps = space./vel;
+                        
+                        time = 0;
+                        data(obj.indices_.('time'),i) = 0;
+
+                        for i = 1 : length(data(obj.indices_.('time'),:)) - 1
+                            time = time + steps(i);
+                            data(obj.indices_.('time'),i+1) = time;
+                        end
+                    end
+
                 end
 
                 % Reduce data
