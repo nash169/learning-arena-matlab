@@ -5,7 +5,7 @@ classdef manifold_learning < handle
     %=== PUBLIC ===%
     properties
         type_
-        params_name_ = {'num_eigs'}
+        params_name_ = {'num_eigs', 'solver'}
     end
 
     methods
@@ -17,6 +17,8 @@ classdef manifold_learning < handle
             if nargin > 0; obj.set_params(varargin{:}); end
 
             if ~isfield(obj.params_, 'num_eigs'); obj.params_.num_eigs = 10; end
+
+            if ~isfield(obj.params_, 'solver'); obj.params_.solver = 'full'; end
 
             obj.is_graph_ = false;
             obj.reset;
