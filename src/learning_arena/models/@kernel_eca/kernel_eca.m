@@ -56,7 +56,6 @@ classdef kernel_eca < manifold_learning
         end
 
         function [V, D, W] = solve(obj)
-
             switch obj.params_.solver
                 case 'sparse'
                     [V, D] = eigs(obj.similarity, obj.params_.num_eigs, 'largestabs', 'Tolerance', 1e-14, 'MaxIterations', 1000); % obj.similarity/obj.m_
@@ -71,9 +70,7 @@ classdef kernel_eca < manifold_learning
                     W = W(:, obj.order_);
                 otherwise
                     disp('Solver not found')
-
             end
-
         end
 
     end

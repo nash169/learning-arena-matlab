@@ -3,7 +3,7 @@ function L = laplacian(obj)
 
     if ~obj.is_laplacian_
         dm = diffusion_maps('alpha', 1, 'operator', 'inifinitesimal');
-        dm.graph_options('type', 'k-nearest', 'k', 100);
+        dm.set_graph('type', 'k-nearest', 'k', 100);
         dm.set_data(obj.params_.manifold.data);
         dm.set_params('kernel', obj.params_.kernel, 'epsilon', obj.params_.epsilon);
 
